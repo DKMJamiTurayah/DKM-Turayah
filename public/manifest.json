@@ -1,0 +1,3 @@
+{ "name": "DKM Masjid Jami Turayah", "short_name": "DKM Turayah", "start_url": "/", "display": "standalone",
+  "background_color": "#f4f6f5", "theme_color": "#0f5e47",
+  "icons": [{ "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml" }] }
