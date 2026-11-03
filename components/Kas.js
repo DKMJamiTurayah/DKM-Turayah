@@ -94,7 +94,7 @@ function Isi({ k, judul, bln, namaPos }) {
 
 const KATEGORI = {
   masuk: ['Infaq Umum', 'Sedekah', 'Zakat', 'Wakaf', 'Donatur Tetap', 'Kotak Amal Harian', 'Saldo Awal', 'Koreksi'],
-  keluar: ['Listrik & Air', 'Kebersihan', 'Honor Imam/Khatib', 'Honor Marbot', 'Perbaikan', 'ATK', 'Sosial', 'Koreksi']
+  keluar: ['Listrik & Air', 'Kebersihan', 'Gaji Marbot', 'Bisyaroh Khotib','Honor Imam/Khatib', 'Honor Marbot', 'Perbaikan', 'ATK', 'Sosial', 'Koreksi']
 };
 
 function FormKas({ pos }) {
