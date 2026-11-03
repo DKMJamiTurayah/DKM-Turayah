@@ -81,7 +81,7 @@ function Isi({ k, judul, bln, namaPos }) {
       return <tr key={key}><td>{nama}</td><td className={'r ' + j}>{j === 'masuk' ? '+' : '−'} {rp(v)}</td></tr>; })}</tbody></table>
       : <div className="kosong">Tidak ada transaksi bulan ini</div>}</div>
     <div className="aksi" style={{ marginTop: 0, marginBottom: 10 }}>
-      <button className="btn sek" onClick={csv}>Unduh CSV</button><button className="btn sek" onClick={print}>Cetak Laporan</button></div>
+      <button className="btn sek" onClick={csv}>Unduh Excel</button><button className="btn sek" onClick={print}>Cetak Laporan</button></div>
     {k.baris.slice().reverse().map(r => <div className="kartu" key={r.id}>
       <div className="baris-flex"><span className="kecil">{tgl(r.tanggal)} · {namaPos(r.pos_id)} · {r.kategori}</span><span className="spasi" />
         <span className={'nominal ' + r.jenis}>{r.jenis === 'masuk' ? '+' : '−'} {rp(r.jumlah)}</span></div>
