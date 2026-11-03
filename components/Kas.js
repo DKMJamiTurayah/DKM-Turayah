@@ -37,6 +37,7 @@ export default function Kas() {
 
   return <>
     <div className="baris-flex"><h2 className="spasi">Buku Kas</h2>
+  {a.punya('bendahara') && <button className="btn sek kecil" onClick={() => a.openModal('Impor dari PDF', <ImporPDF pos={posList.filter(p => p.aktif)} />)}>Impor PDF</button>}
       {a.punya('bendahara') && <button className="btn kecil" onClick={() => a.openModal('Transaksi Kas Lain-lain', <FormKas pos={posList.filter(p => p.aktif)} />)}>+ Transaksi</button>}</div>
     {sp.data && <div className="kartu">
       <div className="baris-flex"><b className="spasi">Saldo per pos dana</b>
@@ -176,3 +177,133 @@ function AturPos({ list }) {
     <div className="aksi"><Btn onClick={simpan}>Simpan</Btn></div>
   </>;
 }
+const BLN = { jan: 1, feb: 2, mar: 3, apr: 4, mei: 5, may: 5, jun: 6, jul: 7, agu: 8, agt: 8, ags: 8, aug: 8, sep: 9, okt: 10, oct: 10, nov: 11, des: 12, dec: 12 };
+const RE_TGL = /^(\d{1,2})-([A-Za-z]{3,4})-(\d{4})$/, RE_NUM = /^-?\d{1,3}(\.\d{3})*$/;
+const nom = s => +s.replace(/\./g, '');
+function kelompokBaris(items) {
+  const it = items.filter(i => i.s.trim()).sort((a, b) => b.y - a.y || a.x - b.x);
+  const baris = [];
+  it.forEach(i => { const b = baris.find(r => Math.abs(r.y - i.y) < 7); if (b) b.t.push(i); else baris.push({ y: i.y, t: [i] }); });
+  return baris.map(b => {
+    b.t.sort((p, q) => p.x - q.x);
+    let s = '';
+    b.t.forEach((i, k) => { const gap = k ? i.x - (b.t[k - 1].x + b.t[k - 1].w) : 0; s += (k && gap > 1.5 ? ' ' : '') + i.s.trim(); });
+    return s;
+  });
+}
+function urai(baris) {
+  const rows = [], luar = [];
+  baris.forEach(line => {
+    const t = line.replace(/(\d{1,2})\s*-\s*([A-Za-z]{3,4})\s*-\s*(\d{4})/g, '$1-$2-$3').split(/\s+/).filter(Boolean);
+    const di = t.map((x, i) => RE_TGL.test(x) ? i : -1).filter(i => i >= 0);
+    const akhir = t[t.length - 1] || '';
+    if (di.length === 1) {
+      const m = t[di[0]].match(RE_TGL), bl = BLN[m[2].toLowerCase()];
+      const ni = t.map((x, i) => i > di[0] && RE_NUM.test(x) ? i : -1).filter(i => i >= 0);
+      if (!bl || !ni.length) return;
+      const pakai = ni.slice(-2);
+      rows.push({
+        tgl: m[3] + '-' + String(bl).padStart(2, '0') + '-' + m[1].padStart(2, '0'),
+        ket: t.filter((x, i) => i !== di[0] && !pakai.includes(i) && !(i === 0 && /^\d+$/.test(x))).join(' '),
+        saldo: nom(t[pakai[pakai.length - 1]]), amt: pakai.length > 1 ? nom(t[pakai[0]]) : null
+      });
+      
+    } else if (!di.length && RE_NUM.test(akhir) && (akhir.includes('.') || akhir[0] === '-')) luar.push({ n: nom(akhir), sesudah: rows.length > 0 });
+  });
+  const awal = (luar.find(x => !x.sesudah) || {}).n;
+  const tot = luar.filter(x => x.sesudah).map(x => x.n);
+  let prev = awal ?? 0;
+  rows.forEach(r => { const d = r.saldo - prev; r.jenis = d >= 0 ? 'masuk' : 'keluar'; r.jml = Math.abs(d); r.beda = r.amt !== null && r.amt !== r.jml; prev = r.saldo; });
+  const tm = rows.filter(r => r.jenis === 'masuk').reduce((x, r) => x + r.jml, 0), tk = rows.filter(r => r.jenis === 'keluar').reduce((x, r) => x + r.jml, 0);
+  return { rows, awal, akhir: rows.length ? rows[rows.length - 1].saldo : null, tm, tk, cocok: tot.length >= 2 ? tm === tot[0] && tk === tot[1] : null, awalHilang: awal === undefined };
+}
+
+const PDFJS = ['https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf', 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf'];
+function muatPdfJs() {
+  if (window.pdfjsLib) return Promise.resolve(window.pdfjsLib);
+  const coba = i => new Promise((ok, gagal) => {
+    const s = document.createElement('script');
+    s.src = PDFJS[i] + '.min.js';
+    s.onload = () => { window.pdfjsLib.GlobalWorkerOptions.workerSrc = PDFJS[i] + '.worker.min.js'; ok(window.pdfjsLib); };
+    s.onerror = () => gagal(new Error('Gagal memuat pembaca PDF, cek internet'));
+    document.head.appendChild(s);
+  });
+  return coba(0).catch(() => coba(1));
+}
+async function bacaPdf(file) {
+  const lib = await muatPdfJs();
+  const doc = await lib.getDocument({ data: await file.arrayBuffer() }).promise;
+  const baris = [];
+  for (let p = 1; p <= doc.numPages; p++) {
+    const tc = await (await doc.getPage(p)).getTextContent();
+        baris.push(...kelompokBaris(tc.items.map(i => ({ s: i.str, x: i.transform[4], y: i.transform[5], w: i.width }))));
+  }
+  return urai(baris);
+}
+
+function ImporPDF({ pos }) {
+  const a = useApp();
+  const [h, setH] = useState(null);
+  const [posId, setPosId] = useState((pos.find(p => p.utama) || pos[0])?.id);
+  const [sibuk, setSibuk] = useState(false);
+  const kero = r => /keropak|iuran/i.test(r.ket);
+  const ubah = (i, k, v) => setH(d => ({ ...d, rows: d.rows.map((r, j) => j === i ? { ...r, [k]: v } : r) }));
+  const pilih = async e => {
+    const f = e.target.files[0];
+    if (!f) return;
+    setSibuk(true); setH(null);
+    try {
+      const x = await bacaPdf(f);
+      if (!x.rows.length) throw new Error('Tidak ada transaksi terbaca. Pastikan PDF berisi teks, bukan foto/scan.');
+      const t = x.rows.map(r => r.tgl).sort();
+      const ada = await q(sb().from('kas').select('tanggal,jenis,jumlah').gte('tanggal', t[0]).lte('tanggal', t[t.length - 1]));
+      x.rows.forEach(r => { r.dobel = ada.some(k => k.tanggal === r.tgl && k.jenis === r.jenis && +k.jumlah === r.jml); r.pilih = !r.dobel; r.kat = ''; });
+      setH(x);
+    } catch (err) { a.toast(err.message || 'Gagal membaca PDF', true); }
+    setSibuk(false);
+  };
+  const simpan = async () => {
+    const pil = h.rows.filter(r => r.pilih && !r.sudah && !kero(r));
+    if (!pil.length) return a.toast('Tidak ada baris yang dicentang', true);
+    if (pil.some(r => !r.kat.trim())) return a.toast('Isi kategori di semua baris yang dicentang', true);
+    const nPos = pos.find(p => p.id === +posId)?.nama;
+    if (!confirm(`Simpan ${pil.length} transaksi ke pos ${nPos}? Tidak bisa dihapus.`)) return;
+    setSibuk(true);
+    let ok = 0;
+    try {
+      for (const r of pil) {
+                await rpc('kas_manual', { p_tanggal: r.tgl, p_jenis: r.jenis, p_pos: +posId, p_kategori: r.kat.trim(), p_jumlah: r.jml, p_keterangan: r.ket.trim() || null });
+        ok++;
+        setH(d => ({ ...d, rows: d.rows.map(x => x === r ? { ...x, sudah: true, pilih: false } : x) }));
+      }
+      a.closeModal();
+    } catch (err) { a.toast(`Berhenti: ${err.message}. Tersimpan ${ok} dari ${pil.length}`, true); }
+    if (ok) { a.toast(ok + ' transaksi tersimpan'); a.refresh(); }
+    setSibuk(false);
+  };
+  return <>
+    <p className="kecil">Pilih PDF laporan (yang berisi teks, bukan foto). Isi keterangan dan kategori, hilangkan centang baris yang sudah tercatat. Transaksi kas tidak bisa dihapus.</p>
+    <input className="f" type="file" accept="application/pdf" onChange={pilih} disabled={sibuk} aria-label="File PDF" />
+    {sibuk && !h && <p className="kecil">Membaca PDF…</p>}
+    {h && <>
+      <div className="kartu kecil">Saldo PDF: {rp(h.awal || 0)} → {rp(h.akhir)}<br />Masuk {rp(h.tm)} · Keluar {rp(h.tk)}<br />
+        {h.cocok === true ? '✓ Total cocok dengan PDF' : h.cocok === false ? '⚠ Total TIDAK cocok dengan PDF, periksa lagi' : 'Total di PDF tidak terbaca, cek manual'}
+        {h.awalHilang ? ' · saldo awal tidak terbaca (dianggap 0)' : ''}</div>
+      <label className="f" htmlFor="impPos">Pos dana tujuan</label>
+      <select className="f" id="impPos" value={posId || ''} onChange={e => setPosId(e.target.value)}>
+        {pos.map(p => <option key={p.id} value={p.id}>{p.nama}</option>)}</select>
+      <datalist id="dlK_masuk">{KATEGORI.masuk.map(x => <option key={x} value={x} />)}</datalist>
+      <datalist id="dlK_keluar">{KATEGORI.keluar.map(x => <option key={x} value={x} />)}</datalist>
+                                                         {h.rows.map((r, i) => <div className="kartu" key={i} style={{ opacity: kero(r) || r.sudah ? 0.5 : 1 }}>
+        <div className="baris-flex"><label className="kecil"><input type="checkbox" checked={r.pilih && !kero(r) && !r.sudah} disabled={kero(r) || r.sudah} onChange={e => ubah(i, 'pilih', e.target.checked)} /> {tgl(r.tgl)}</label><span className="spasi" />
+          <span className={'nominal ' + r.jenis}>{r.jenis === 'masuk' ? '+' : '−'} {rp(r.jml)}</span></div>
+        <input className="f" placeholder="Keterangan" value={r.ket} onChange={e => ubah(i, 'ket', e.target.value)} aria-label="Keterangan" />
+        <input className="f" list={'dlK_' + r.jenis} placeholder="Kategori" value={r.kat} onChange={e => ubah(i, 'kat', e.target.value)} aria-label="Kategori" />
+        {r.sudah ? <div className="kecil">✓ Tersimpan</div> : kero(r) ? <div className="kecil">Keropak/iuran: catat lewat menu Keropak/Iuran, tidak diimpor.</div>
+          : r.dobel ? <div className="kecil">⚠ Mirip transaksi yang sudah ada, centang kalau memang beda.</div>
+          : r.beda ? <div className="kecil">⚠ Angka di PDF tidak cocok dengan perubahan saldo.</div> : null}
+      </div>)}
+      <div className="aksi"><Btn onClick={simpan}>Simpan yang dicentang</Btn></div>
+    </>}
+  </>;
+        }  
