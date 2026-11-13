@@ -216,13 +216,13 @@ const strip = n => +n ? rp(n) : '-';
 export function Poster({ d, lap, ref }) {
   const total = lap.reduce((x, r) => x + +r.total, 0);
   const judul = (d.nama_masjid || '').trim();
-    return <div ref={ref} className="mk" style={{
-      backgroundImage: 'linear-gradient(rgba(255,255,255,.70), rgba(255,255,255,.70)), url(/logo-masjid-jamie-jelas.png)',
-      backgroundSize: 'cover, 75%',
-      backgroundPosition: 'center, center',
-      backgroundRepeat: 'no-repeat',
-    }}>
-    <div className="mk-atas">
+  return <div ref={ref} className="mk">
+    <div className="mk-atas" style={{ position: 'relative' }}>
+      <img src="/logo-masjid-jamie-jelas.png" alt="" style={{
+        position: 'absolute', top: 24, right: 24,
+        width: 160, height: 160, objectFit: 'contain',
+        background: '#fff', borderRadius: 24, padding: 8,
+      }} />
       <svg className="mk-hias" width="230" height="200" viewBox="0 0 230 200" aria-hidden="true">
         <g stroke="#c9a14d" strokeWidth="2.2" opacity=".85">
           <line x1="82" y1="18" x2="40" y2="78" /><line x1="82" y1="18" x2="128" y2="58" /><line x1="128" y1="58" x2="186" y2="24" />
@@ -275,4 +275,5 @@ export function Poster({ d, lap, ref }) {
       <div className="r"><span>Token listrik{d.token_an ? ', a/n ' + d.token_an : ''}</span><b>{d.token_listrik || '-'}</b></div>
     </div>
   </div>;
-}
+  }
+  
