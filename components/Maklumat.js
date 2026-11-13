@@ -217,7 +217,7 @@ export function Poster({ d, lap, ref }) {
   const total = lap.reduce((x, r) => x + +r.total, 0);
   const judul = (d.nama_masjid || '').trim();
     return <div ref={ref} className="mk" style={{
-      backgroundImage: 'linear-gradient(rgba(255,255,255,.80), rgba(255,255,255,.80)), url(/logo-masjid-jamie-jelas.png)',
+      backgroundImage: 'linear-gradient(rgba(255,255,255,.70), rgba(255,255,255,.70)), url(/logo-masjid-jamie-jelas.png)',
       backgroundSize: 'cover, 75%',
       backgroundPosition: 'center, center',
       backgroundRepeat: 'no-repeat',
