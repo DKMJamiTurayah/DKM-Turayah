@@ -219,8 +219,8 @@ export function Poster({ d, lap, ref }) {
   return <div ref={ref} className="mk">
     <div className="mk-atas" style={{ position: 'relative' }}>
       <img src="/logo-masjid-jamie-jelas.png" alt="" style={{
-        position: 'absolute', top: 24, right: 24,
-        width: 160, height: 160, objectFit: 'contain',
+        position: 'absolute', top: 24, right: 24, zIndex: 2,
+        width: 190, height: 190, objectFit: 'contain',
         background: '#fff', borderRadius: 24, padding: 8,
       }} />
       <svg className="mk-hias" width="230" height="200" viewBox="0 0 230 200" aria-hidden="true">
@@ -275,5 +275,4 @@ export function Poster({ d, lap, ref }) {
       <div className="r"><span>Token listrik{d.token_an ? ', a/n ' + d.token_an : ''}</span><b>{d.token_listrik || '-'}</b></div>
     </div>
   </div>;
-  }
-  
+}
