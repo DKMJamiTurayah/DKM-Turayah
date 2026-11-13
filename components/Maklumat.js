@@ -216,7 +216,12 @@ const strip = n => +n ? rp(n) : '-';
 export function Poster({ d, lap, ref }) {
   const total = lap.reduce((x, r) => x + +r.total, 0);
   const judul = (d.nama_masjid || '').trim();
-  return <div ref={ref} className="mk">
+    return <div ref={ref} className="mk" style={{
+      backgroundImage: 'linear-gradient(rgba(255,255,255,.88), rgba(255,255,255,.88)), url(/logo-masjid-jamie-jelas.png)',
+      backgroundSize: 'cover, 75%',
+      backgroundPosition: 'center, center',
+      backgroundRepeat: 'no-repeat',
+    }}>
     <div className="mk-atas">
       <svg className="mk-hias" width="230" height="200" viewBox="0 0 230 200" aria-hidden="true">
         <g stroke="#c9a14d" strokeWidth="2.2" opacity=".85">
