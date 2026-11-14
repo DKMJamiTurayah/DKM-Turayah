@@ -67,10 +67,6 @@ export const IK = {
   kelola: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1"/></svg>'
 };
 
-export function LogoMasjid({ size = 22 }) {
-  return <svg width={size} height={size} viewBox="0 0 64 64">
-    <path d="M32 8c-9 7-15 12-15 21h30c0-9-6-14-15-21z" fill="#f2c14e" />
-    <rect x="15" y="29" width="34" height="23" fill="#fff" />
-    <rect x="28" y="37" width="8" height="15" rx="4" fill="#0f5e47" />
-  </svg>;
+export function LogoMasjid({ size = 34 }) {
+  return <img src="/logo.png" alt="Logo Masjid" width={size} height={size} style={{ objectFit: 'contain', borderRadius: 4, display: 'block' }} />;
 }
