@@ -41,7 +41,7 @@ export default function Kas() {
   {a.punya('bendahara', 'admin') && <button className="btn kecil" onClick={() => a.openModal('Transaksi Kas Lain-lain', <FormKas pos={posList.filter(p => p.aktif)} />)}>+ Transaksi</button>}</div>
   {sp.data && <div className="kartu">
       <div className="baris-flex"><b className="spasi">Saldo per pos dana</b>
-        {a.punya('bendahara') && <button className="btn sek kecil" onClick={() => a.openModal('Pindah Dana Antar Pos', <FormPindah pos={posList.filter(p => p.aktif)} saldo={sp.data.saldo} />)}>Pindah</button>}
+        {a.punya('bendahara', admin') && <button className="btn sek kecil" onClick={() => a.openModal('Pindah Dana Antar Pos', <FormPindah pos={posList.filter(p => p.aktif)} saldo={sp.data.saldo} />)}>Pindah</button>}
         {a.punya('bendahara', 'admin', 'ketum') && <button className="btn sek kecil" onClick={() => a.openModal('Atur Pos Dana', <AturPos list={posList} />)}>Atur</button>}</div>
       <table className="t" style={{ marginTop: 6 }}><tbody>
         {sp.data.saldo.map(r => <tr key={r.pos_id}><td>{r.nama}</td><td className="r tebal">{rp(r.total)}</td></tr>)}
