@@ -5,7 +5,7 @@ const NAMA = process.env.NEXT_PUBLIC_NAMA_DKM || 'DKM Masjid Jami Turayah';
 export const metadata = {
   title: NAMA,
   description: 'Sistem keuangan & pengajuan anggaran ' + NAMA,
-  icons: { icon: '/icon.svg' },
+    icons: { icon: [{ url: '/favicon.ico' }, { url: '/icon-192.png', sizes: '192x192', type: 'image/png' }], apple: '/apple-touch-icon.png' },
   manifest: '/manifest.json'
 };
 
