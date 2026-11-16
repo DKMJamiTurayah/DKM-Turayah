@@ -45,9 +45,9 @@ export default function Kas() {
         {a.punya('bendahara', 'admin') && <button className="btn sek kecil" onClick={() => a.openModal('Pindah Dana Antar Pos', <FormPindah pos={posList.filter(p => p.aktif)} saldo={sp.data.saldo} />)}>Pindah</button>}
         {a.punya('bendahara', 'admin', 'ketum') && <button className="btn sek kecil" onClick={() => a.openModal('Atur Pos Dana', <AturPos list={posList} />)}>Atur</button>}</div>
       <table className="t" style={{ marginTop: 6 }}><tbody>
-        {sp.data.saldo.map(r => <tr key={r.pos_id}><td>{r.nama}</td><td className="r tebal">{rp(r.total)}</td></tr>)}
-        <tr><td className="tebal">Total</td><td className="r tebal masuk">{rp(sp.data.saldo.reduce((x, r) => x + +r.total, 0))}</td></tr>
-        {sp.data.transit > 0 && <tr><td className="kecil">Dana intransit (belum masuk kas)</td><td className="r kecil">{rp(sp.data.transit)}</td></tr>}
+        {sp.data.saldo.filter(r => pos === 'semua' || String(r.pos_id) === pos).map(r => <tr key={r.pos_id}><td>{r.nama}</td><td className="r tebal">{rp(r.total)}</td></tr>)}
+        {pos === 'semua' && <tr><td className="tebal">Total</td><td className="r tebal masuk">{rp(sp.data.saldo.reduce((x, r) => x + +r.total, 0))}</td></tr>}
+        {pos === 'semua' && sp.data.transit > 0 && <tr><td className="kecil">Dana intransit (belum masuk kas)</td><td className="r kecil">{rp(sp.data.transit)}</td></tr>}
       </tbody></table></div>}
     <Chips items={[['semua', 'Semua pos'], ...posList.map(p => [String(p.id), p.nama])]} value={pos} onChange={setPos} />
     <div className="kartu baris-flex"><button className="btn sek kecil" onClick={() => geser(-1)}>‹</button>
