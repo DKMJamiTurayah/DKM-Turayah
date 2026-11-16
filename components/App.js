@@ -9,13 +9,21 @@ import Pengajuan from './Pengajuan';
 import Keropak from './Keropak';
 import Iuran from './Iuran';
 import Kas from './Kas';
+import Intransit from './Intransit';
 import Kelola from './Kelola';
 import Maklumat from './Maklumat';
 import Akun from './Akun';
 
-const HALAMAN = { beranda: Beranda, pengajuan: Pengajuan, keropak: Keropak, iuran: Iuran, kas: Kas, maklumat: Maklumat, kelola: Kelola };
+const HALAMAN = { beranda: Beranda, pengajuan: Pengajuan, keropak: Keropak, iuran: Iuran, kas: Kas, intransit: Intransit, maklumat: Maklumat, kelola: Kelola };
 
 // daftar tugas yang menunggu tindakan user ini (dipakai di beranda & badge menu)
+// auto logout: keluar sendiri kalau tidak ada aktivitas selama 15 menit
+const BATAS_DIAM = 15 * 60 * 1000;
+const KUNCI_AKTIF = 'dkm_terakhir_aktif';
+const bacaAktif = () => { try { return +localStorage.getItem(KUNCI_AKTIF) || 0; } catch { return 0; } };
+const tulisAktif = t => { try { localStorage.setItem(KUNCI_AKTIF, String(t)); } catch {} };
+const hapusAktif = () => { try { localStorage.removeItem(KUNCI_AKTIF); } catch {} };
+
 export async function tugasSaya(me) {
   const t = [], punya = (...r) => r.includes(me.role);
   const hit = async (tabel, f) => {
@@ -33,6 +41,14 @@ export async function tugasSaya(me) {
     if (b) t.push({ n: b, teks: 'Setoran keropak Jumat menunggu diterima', ke: 'keropak' });
     const c = await hit('iuran', x => x.eq('status', 'belum_setor'));
     if (c) t.push({ n: c, teks: 'Pembayaran iuran warga belum disetor ke Anda', ke: 'iuran', sub: 'setoran' });
+  }
+  if (punya('bendahara')) {
+    const d = await hit('intransit', x => x.eq('status', 'diserahkan'));
+    if (d) t.push({ n: d, teks: 'Uang kembalian sudah diserahkan — klik \"Terima\" setelah uang di tangan Anda', ke: 'intransit' });
+  }
+  {
+    const d = await hit('intransit', x => x.eq('status', 'menunggu').eq('dicatat_by', me.id));
+    if (d) t.push({ n: d, teks: 'Uang kembalian siap diserahkan ke Bendahara — klik \"Sudah Saya Serahkan\"', ke: 'intransit' });
   }
   if (punya('ketua_bidang')) {
     const n = await hit('pengajuan', x => x.eq('status', 'dicairkan').eq('bidang_id', me.bidang_id));
@@ -57,6 +73,8 @@ export default function App() {
   const [toastS, setToastS] = useState(null);
   const [badge, setBadge] = useState({});
   const timer = useRef();
+  const sesiRef = useRef(null);
+  const halRef = useRef('beranda');
 
   const toast = useCallback((msg, err) => {
     setToastS({ msg, err });
@@ -86,6 +104,12 @@ export default function App() {
         if (T) return await muatSaya(T.uid);
         const { data: { session } } = await sb().auth.getSession();
         if (!session) return setStatus('login');
+        const last = bacaAktif();
+        if (last && Date.now() - last > BATAS_DIAM) {
+          await sb().auth.signOut(); hapusAktif();
+          toast('Sesi berakhir karena tidak aktif lebih dari 15 menit. Silakan masuk lagi.', true);
+          return setStatus('login');
+        }
         await muatSaya(session.user.id);
       } catch (e) { toast(pesanError(e), true); setStatus('login'); }
     })();
@@ -99,8 +123,45 @@ export default function App() {
   }, [status, me, refreshKey]);
 
   const punya = (...r) => !!me && r.includes(me.role);
-  const keluar = async () => { if (!window.__DKM_TEST__) await sb().auth.signOut(); setMe(null); setStatus('login'); };
-  const menu = [['beranda', 'Beranda'], ['pengajuan', 'Pengajuan'], ['keropak', 'Keropak'], ['iuran', 'Iuran'], ['kas', 'Kas'], ['maklumat', 'Maklumat']];
+  const keluar = async () => { if (!window.__DKM_TEST__) await sb().auth.signOut(); hapusAktif(); setModal(null); setMe(null); setStatus('login'); };
+  const autoKeluar = useCallback(async () => {
+    try { await sb().auth.signOut(); } catch {}
+    hapusAktif(); setModal(null); setMe(null); setStatus('login');
+    toast('Anda otomatis keluar karena tidak aktif 15 menit. Silakan masuk lagi.', true);
+  }, [toast]);
+
+  // pantau aktivitas; ping hanya dihitung dari sentuhan/ketikan user, bukan dari proses otomatis
+  useEffect(() => {
+    if ((status !== 'ok' && status !== 'pending') || window.__DKM_TEST__) return;
+    let last = Date.now(), tulis = 0;
+    tulisAktif(last);
+    const aktif = () => { last = Date.now(); if (last - tulis > 10000) { tulis = last; tulisAktif(last); } };
+    const cek = () => { if (Date.now() - Math.max(last, bacaAktif()) > BATAS_DIAM) autoKeluar(); };
+    const lihat = () => { if (document.visibilityState === 'visible') cek(); };
+    const ev = ['pointerdown', 'keydown', 'scroll', 'touchstart', 'mousemove'];
+    ev.forEach(e => window.addEventListener(e, aktif, { passive: true }));
+    document.addEventListener('visibilitychange', lihat);
+    const iv = setInterval(cek, 15000);
+    return () => { ev.forEach(e => window.removeEventListener(e, aktif)); document.removeEventListener('visibilitychange', lihat); clearInterval(iv); };
+  }, [status, autoKeluar]);
+
+  // rekam sesi: siapa yang membuka aplikasi, halaman terakhir, dan kapan terakhir aktif
+  const kirimPing = useCallback(() => {
+    if (!sesiRef.current || document.visibilityState !== 'visible') return;
+    sb().rpc('ping_sesi', { p_id: sesiRef.current, p_halaman: halRef.current }).then(() => {}, () => {});
+  }, []);
+  useEffect(() => {
+    if ((status !== 'ok' && status !== 'pending') || !me?.id || window.__DKM_TEST__) return;
+    let hidup = true;
+    sb().rpc('mulai_sesi', { p_perangkat: navigator.userAgent }).then(({ data, error }) => {
+      if (!hidup || error) return;      // kalau migration 003 belum dijalankan, diam saja
+      sesiRef.current = data; kirimPing();
+    }, () => {});
+    const iv = setInterval(kirimPing, 60000);
+    return () => { hidup = false; sesiRef.current = null; clearInterval(iv); };
+  }, [status, me?.id, kirimPing]);
+  useEffect(() => { halRef.current = hal; kirimPing(); }, [hal, kirimPing]);
+  const menu = [['beranda', 'Beranda'], ['pengajuan', 'Pengajuan'], ['keropak', 'Keropak'], ['iuran', 'Iuran'], ['kas', 'Kas'], ['intransit', 'Intransit'], ['maklumat', 'Maklumat']];
   if (punya('admin', 'ketum')) menu.push(['kelola', 'Kelola']);
 
   const ctx = {

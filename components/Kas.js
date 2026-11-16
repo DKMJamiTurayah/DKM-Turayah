@@ -12,8 +12,9 @@ export default function Kas() {
   const [pos, setPos] = useState('semua');
   const [th, bl] = bln.split('-').map(Number);
   const sp = useLoad(async () => {
-    const [list, saldo] = await Promise.all([muatPos(), rpc('laporan_pos', { p_tgl: hariIni() })]);
-    return { list, saldo };
+    const [list, saldo, transit] = await Promise.all([muatPos(), rpc('laporan_pos', { p_tgl: hariIni() }),
+      Promise.resolve(q(sb().from('intransit').select('jumlah').neq('status', 'diterima'))).catch(() => [])]);
+    return { list, saldo, transit: transit.reduce((x, r) => x + +r.jumlah, 0) };
   }, [a.refreshKey]);
   const s = useLoad(async () => {
     const awal = bln + '-01', akhir = new Date(Date.UTC(th, bl, 1)).toISOString().slice(0, 10);
@@ -46,6 +47,7 @@ export default function Kas() {
       <table className="t" style={{ marginTop: 6 }}><tbody>
         {sp.data.saldo.map(r => <tr key={r.pos_id}><td>{r.nama}</td><td className="r tebal">{rp(r.total)}</td></tr>)}
         <tr><td className="tebal">Total</td><td className="r tebal masuk">{rp(sp.data.saldo.reduce((x, r) => x + +r.total, 0))}</td></tr>
+        {sp.data.transit > 0 && <tr><td className="kecil">Dana intransit (belum masuk kas)</td><td className="r kecil">{rp(sp.data.transit)}</td></tr>}
       </tbody></table></div>}
     <Chips items={[['semua', 'Semua pos'], ...posList.map(p => [String(p.id), p.nama])]} value={pos} onChange={setPos} />
     <div className="kartu baris-flex"><button className="btn sek kecil" onClick={() => geser(-1)}>‹</button>

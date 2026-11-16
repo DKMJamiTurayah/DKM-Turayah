@@ -6,9 +6,10 @@ import { Btn, Field, useApp } from './ui';
 
 export default function Akun() {
   const a = useApp();
-  const [nama, setNama] = useState(a.me.nama), [hp, setHp] = useState(a.me.no_hp || ''), [pass, setPass] = useState('');
+  const [nama, setNama] = useState(a.me.nama), [hp, setHp] = useState(a.me.no_hp || ''), [rumah, setRumah] = useState(a.me.no_rumah || ''), [pass, setPass] = useState('');
   const simpan = async () => {
-    await rpc('ubah_profil_saya', { p_nama: nama, p_no_hp: hp.trim() || null });
+    if (!nama.trim() || !rumah.trim()) return a.toast('Nama dan nomor rumah wajib diisi', true);
+    await rpc('ubah_profil_saya', { p_nama: nama, p_no_hp: hp.trim() || null, p_no_rumah: rumah.trim() });
     a.closeModal(); a.toast('Tersimpan'); await a.muatSaya(a.me.id);
   };
   const ganti = async () => {
@@ -20,6 +21,7 @@ export default function Akun() {
   return <>
     <div className="kecil">@{a.me.username} · {ROLE[a.me.role]}</div>
     <Field id="pNama" label="Nama" value={nama} onChange={e => setNama(e.target.value)} />
+    <Field id="pRumah" label="Nomor rumah" value={rumah} onChange={e => setRumah(e.target.value)} placeholder="contoh: B2 No. 15" />
     <Field id="pHp" label="No. HP" value={hp} onChange={e => setHp(e.target.value)} />
     <div className="aksi"><Btn onClick={simpan}>Simpan</Btn></div>
     <h3>Ganti Password</h3>

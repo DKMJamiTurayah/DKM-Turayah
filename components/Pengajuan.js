@@ -91,18 +91,20 @@ export function FormPengajuan() {
 function DetailAju({ id }) {
   const a = useApp();
   const [kNom, setKNom] = useState(null), [kCat, setKCat] = useState('');
+  const [kbJml, setKbJml] = useState(0), [kbCat, setKbCat] = useState('');
   const [cMet, setCMet] = useState('Tunai'), [cCat, setCCat] = useState(''), [tCat, setTCat] = useState(''), [cPos, setCPos] = useState('');
   const s = useLoad(async () => {
-    const [p, items, log, pos] = await Promise.all([
+    const [p, items, log, pos, kb] = await Promise.all([
       q(sb().from('pengajuan').select('*').eq('id', id).single()),
       q(sb().from('pengajuan_item').select('*').eq('pengajuan_id', id).order('id')),
       q(sb().from('log_aktivitas').select('*').eq('modul', 'pengajuan').eq('ref_id', id).order('id')),
-      a.punya('bendahara') ? rpc('laporan_pos', { p_tgl: hariIni() }) : []
+      a.punya('bendahara') ? rpc('laporan_pos', { p_tgl: hariIni() }) : [],
+      Promise.resolve(q(sb().from('intransit').select('*').eq('pengajuan_id', id).maybeSingle())).catch(() => null)
     ]);
-    return { p, items, log, pos };
+    return { p, items, log, pos, kb };
   }, [id]);
   if (!s.data) return <Loading s={s} />;
-  const { p, items, log, pos } = s.data;
+  const { p, items, log, pos, kb } = s.data;
   const posCair = cPos || String(pos[0]?.pos_id || '');
   const me = a.me;
   const [lbl, cls] = ST_AJU[p.status];
@@ -110,6 +112,7 @@ function DetailAju({ id }) {
   const bisaCair = a.punya('bendahara') && p.status === 'disetujui';
   const bisaTerima = p.status === 'dicairkan' && (me.id === p.diajukan_by || (me.role === 'ketua_bidang' && me.bidang_id === p.bidang_id));
   const bisaBatal = p.status === 'diajukan' && me.id === p.diajukan_by;
+  const bisaKembalian = p.status === 'diterima' && !kb && (me.id === p.diajukan_by || (me.role === 'ketua_bidang' && me.bidang_id === p.bidang_id));
   const selesai = msg => { a.closeModal(); a.toast(msg); a.refresh(); };
 
   const putus = async setuju => {
@@ -127,6 +130,12 @@ function DetailAju({ id }) {
   const terima = async () => {
     await rpc('konfirmasi_terima', { p_id: id, p_catatan: tCat.trim() || null });
     selesai('Terima kasih, penerimaan dana tercatat');
+  };
+  const catatKembalian = async () => {
+    if (!kbJml) return a.toast('Isi jumlah kembalian', true);
+    if (!confirm(`Catat kembalian ${rp(kbJml)} untuk diserahkan ke Bendahara?`)) return;
+    await rpc('catat_kembalian', { p_pengajuan: id, p_jumlah: kbJml, p_catatan: kbCat.trim() || null });
+    a.closeModal(); a.toast('Kembalian tercatat, masuk menu Intransit'); a.go('intransit', 'proses'); a.refresh();
   };
   const batal = async () => {
     if (!confirm('Batalkan pengajuan ini?')) return;
@@ -172,6 +181,15 @@ function DetailAju({ id }) {
       <div className="kecil">Klik setelah uang <b>{rp(p.total_disetujui)}</b> benar-benar sudah Anda terima.</div>
       <Field id="tCat" label="Catatan (opsional)" value={tCat} onChange={e => setTCat(e.target.value)} />
       <div className="aksi"><Btn onClick={terima}>✓ Sudah Diterima</Btn></div>
+    </>}
+    {kb && <div className="kartu" style={{ marginTop: 10 }}><b>Kembalian {rp(kb.jumlah)}</b>
+      <div className="kecil">Status: {{ menunggu: 'menunggu diserahkan', diserahkan: 'dalam perjalanan ke Bendahara', diterima: 'sudah diterima Bendahara' }[kb.status]} · lihat di menu Intransit</div></div>}
+    {bisaKembalian && <>
+      <h3>Ada Uang Kembalian?</h3>
+      <div className="kecil">Kalau dana <b>{rp(p.total_disetujui)}</b> tidak terpakai semua, catat sisanya di sini. Uang akan berstatus intransit sampai Bendahara menerimanya.</div>
+      <InputRp id="kbJml" label="Jumlah kembalian" value={kbJml} onChange={setKbJml} />
+      <Field id="kbCat" label="Catatan (opsional)" value={kbCat} onChange={e => setKbCat(e.target.value)} placeholder="contoh: sisa belanja konsumsi" />
+      <div className="aksi"><Btn className="btn sek" onClick={catatKembalian}>Catat Kembalian</Btn></div>
     </>}
     {bisaBatal && <div className="aksi"><Btn className="btn merah-sek" onClick={batal}>Batalkan Pengajuan</Btn></div>}
   </>;

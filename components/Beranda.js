@@ -5,7 +5,7 @@ import { Loading, useApp, useLoad } from './ui';
 import { bukaFormPengajuan } from './Pengajuan';
 import { FormKeropak } from './Keropak';
 
-const labelModul = m => ({ pengajuan: 'pengajuan', keropak: 'keropak Jumat', iuran: 'iuran warga', kas: 'kas', user: 'pengurus', maklumat: 'maklumat Jumat' }[m] || m);
+const labelModul = m => ({ pengajuan: 'pengajuan', keropak: 'keropak Jumat', iuran: 'iuran warga', kas: 'kas', user: 'pengurus', maklumat: 'maklumat Jumat', intransit: 'intransit kembalian' }[m] || m);
 
 export default function Beranda() {
   const a = useApp();

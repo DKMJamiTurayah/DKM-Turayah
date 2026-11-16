@@ -7,7 +7,7 @@ import { Btn, Field, LogoMasjid, useApp } from './ui';
 export default function Login() {
   const a = useApp();
   const [mode, setMode] = useState('masuk');
-  const [f, setF] = useState({ nama: '', hp: '', user: '', pass: '' });
+  const [f, setF] = useState({ nama: '', rumah: '', hp: '', user: '', pass: '' });
   const ubah = k => e => setF({ ...f, [k]: e.target.value });
 
   const masuk = async () => {
@@ -18,11 +18,11 @@ export default function Login() {
   };
   const daftar = async () => {
     const u = f.user.trim();
-    if (!f.nama.trim() || !u || !f.pass) return a.toast('Nama, username, password wajib diisi', true);
+    if (!f.nama.trim() || !f.rumah.trim() || !u || !f.pass) return a.toast('Nama, nomor rumah, username, password wajib diisi', true);
     if (!/^[a-zA-Z0-9._-]{3,}$/.test(u)) return a.toast('Username min. 3 huruf, tanpa spasi', true);
     const { data, error } = await sb().auth.signUp({
       email: keEmail(u), password: f.pass,
-      options: { data: { nama: f.nama.trim(), username: u.toLowerCase(), no_hp: f.hp.trim() } }
+      options: { data: { nama: f.nama.trim(), username: u.toLowerCase(), no_hp: f.hp.trim(), no_rumah: f.rumah.trim() } }
     });
     if (error) throw error;
     if (!data.session) { a.toast('Pendaftaran berhasil. Matikan "Confirm email" di Supabase lalu login.'); return setMode('masuk'); }
@@ -39,6 +39,7 @@ export default function Login() {
       </div>
       {mode === 'daftar' && <>
         <Field id="rNama" label="Nama lengkap" value={f.nama} onChange={ubah('nama')} autoComplete="name" />
+        <Field id="rRumah" label="Nomor rumah" value={f.rumah} onChange={ubah('rumah')} placeholder="contoh: B2 No. 15" autoComplete="off" />
         <Field id="rHp" label="No. HP (opsional)" value={f.hp} onChange={ubah('hp')} inputMode="tel" />
       </>}
       <Field id="lUser" label="Username" value={f.user} onChange={ubah('user')} autoComplete="username" autoCapitalize="none" placeholder="contoh: ahmad" />
