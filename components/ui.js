@@ -67,6 +67,7 @@ export const IK = {
   intransit: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 8h13l-3-3M20 16H7l3 3"/></svg>',
   maklumat: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 10v4h3l6 4V6L6 10z"/><path d="M16 9a4 4 0 0 1 0 6M19 6a8 8 0 0 1 0 12"/></svg>',
   zakat: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 10h12l-1.5 10h-9z"/><path d="M9 10V7a3 3 0 0 1 6 0v3M12 14v3"/></svg>',
+  qurban: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 9c-1.5-1-2-3-1-4 1 1 2 1 3 1M19 9c1.5-1 2-3 1-4-1 1-2 1-3 1"/><path d="M7 6h10l1 6-2 3v5h-3v-3h-2v3H8v-5l-2-3z"/></svg>',
   kelola: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1"/></svg>'
 };
 
