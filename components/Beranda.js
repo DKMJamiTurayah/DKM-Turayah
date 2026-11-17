@@ -6,7 +6,7 @@ import { bukaFormPengajuan } from './Pengajuan';
 import { FormKeropak } from './Keropak';
 import { KartuJadwal } from './Jadwal';
 
-const labelModul = m => ({ pengajuan: 'pengajuan', keropak: 'keropak Jumat', iuran: 'iuran warga', kas: 'kas', user: 'pengurus', maklumat: 'maklumat Jumat', intransit: 'intransit kembalian' }[m] || m);
+const labelModul = m => ({ pengajuan: 'pengajuan', keropak: 'keropak Jumat', iuran: 'iuran warga', kas: 'kas', user: 'pengurus', maklumat: 'maklumat Jumat', intransit: 'intransit kembalian', zakat: 'zakat' }[m] || m);
 
 export default function Beranda() {
   const a = useApp();
@@ -40,6 +40,7 @@ export default function Beranda() {
       {a.punya('ketua_bidang') && <button className="btn" onClick={() => bukaFormPengajuan(a)}>+ Ajukan Anggaran</button>}
       <button className="btn sek" onClick={() => a.openModal('Setor Keropak Jumat', <FormKeropak />)}>Setor Keropak Jumat</button>
       <button className="btn sek" onClick={() => a.go('maklumat')}>Maklumat Jumat</button>
+      <button className="btn sek" onClick={() => a.go('zakat', 'terima')}>Zakat Fitrah &amp; Fidyah</button>
       {a.punya('petugas', 'bendahara', 'ketum', 'admin', 'sekretaris') &&
         <button className="btn sek" onClick={() => a.go('iuran', 'catat')}>Catat Iuran Warga</button>}
     </div>
