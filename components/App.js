@@ -16,8 +16,9 @@ import Akun from './Akun';
 import Jadwal from './Jadwal';
 import Zakat from './Zakat';
 import Qurban from './Qurban';
+import Inventaris from './Inventaris';
 
-const HALAMAN = { beranda: Beranda, jadwal: Jadwal, pengajuan: Pengajuan, keropak: Keropak, iuran: Iuran, kas: Kas, intransit: Intransit, maklumat: Maklumat, zakat: Zakat, qurban: Qurban, kelola: Kelola };
+const HALAMAN = { beranda: Beranda, jadwal: Jadwal, pengajuan: Pengajuan, keropak: Keropak, iuran: Iuran, kas: Kas, intransit: Intransit, maklumat: Maklumat, zakat: Zakat, qurban: Qurban, inventaris: Inventaris, kelola: Kelola };
 
 // daftar tugas yang menunggu tindakan user ini (dipakai di beranda & badge menu)
 // auto logout: keluar sendiri kalau tidak ada aktivitas selama 15 menit
@@ -164,7 +165,7 @@ export default function App() {
     return () => { hidup = false; sesiRef.current = null; clearInterval(iv); };
   }, [status, me?.id, kirimPing]);
   useEffect(() => { halRef.current = hal; kirimPing(); }, [hal, kirimPing]);
-  const menu = [['beranda', 'Beranda'], ['jadwal', 'Jadwal'], ['pengajuan', 'Pengajuan'], ['keropak', 'Keropak'], ['iuran', 'Iuran'], ['kas', 'Kas'], ['intransit', 'Intransit'], ['maklumat', 'Maklumat'], ['zakat', 'Zakat'], ['qurban', 'Qurban']];
+  const menu = [['beranda', 'Beranda'], ['jadwal', 'Jadwal'], ['pengajuan', 'Pengajuan'], ['keropak', 'Keropak'], ['iuran', 'Iuran'], ['kas', 'Kas'], ['intransit', 'Intransit'], ['maklumat', 'Maklumat'], ['zakat', 'Zakat'], ['qurban', 'Qurban'], ['inventaris', 'Inventaris']];
   if (punya('admin', 'ketum')) menu.push(['kelola', 'Kelola']);
 
   const ctx = {
