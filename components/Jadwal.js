@@ -5,6 +5,7 @@ import { hariIni, HARI, BULAN, BULAN_P } from '@/lib/util';
 import { hitungJadwal, ramadhanTerdekat, tambahHari, LOKASI, WAKTU, WAJIB } from '@/lib/jadwal';
 import { Btn, Chips, useApp } from './ui';
 import { Skala } from './Maklumat';
+import Tarawih from './Tarawih';
 
 const NAMA = { imsak: 'Imsak', subuh: 'Subuh', terbit: 'Terbit', dhuha: 'Dhuha', dzuhur: 'Dzuhur', ashar: 'Ashar', maghrib: 'Maghrib', isya: 'Isya' };
 const menitWIB = () => (Date.now() / 60000 + 7 * 60) % 1440;
@@ -83,7 +84,7 @@ export default function Jadwal() {
 
   return <>
     <h2>Jadwal Shalat & Puasa</h2>
-    <Chips items={[['hari', 'Hari Ini'], ['ramadhan', 'Imsakiyah Ramadhan']]} value={tab} onChange={setTab} />
+    <Chips items={[['hari', 'Hari Ini'], ['ramadhan', 'Imsakiyah Ramadhan'], ['tarawih', 'Petugas Tarawih']]} value={tab} onChange={setTab} />
 
     {tab === 'hari' ? <>
       <div className="kartu saldo">
@@ -100,7 +101,7 @@ export default function Jadwal() {
         })}
       </div>
       <p className="kecil">Lokasi {LOKASI.nama}. Dihitung dengan metode Kemenag RI (Subuh 20°, Isya 18°, ihtiyat ±2 menit), selisih dengan jadwal resmi Kemenag Kab. Bekasi maksimal 1 menit.</p>
-    </> : <>
+    </> : tab === 'tarawih' ? (rm.r.hari.length ? <Tarawih rm={rm} /> : <div className="kartu kosong">Jadwal Ramadhan belum tersedia.</div>) : <>
       {rm.r.hari.length ? <>
         <div className="kartu">
           <b>Ramadhan {rm.hijri} H</b>
