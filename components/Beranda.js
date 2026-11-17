@@ -6,7 +6,7 @@ import { bukaFormPengajuan } from './Pengajuan';
 import { FormKeropak } from './Keropak';
 import { KartuJadwal } from './Jadwal';
 
-const labelModul = m => ({ pengajuan: 'pengajuan', keropak: 'keropak Jumat', iuran: 'iuran warga', kas: 'kas', user: 'pengurus', maklumat: 'maklumat Jumat', intransit: 'intransit kembalian', zakat: 'zakat' }[m] || m);
+const labelModul = m => ({ pengajuan: 'pengajuan', keropak: 'keropak Jumat', iuran: 'iuran warga', kas: 'kas', user: 'pengurus', maklumat: 'maklumat Jumat', intransit: 'intransit kembalian', zakat: 'zakat', takjil: 'takjil' }[m] || m);
 
 export default function Beranda() {
   const a = useApp();
@@ -46,7 +46,7 @@ export default function Beranda() {
     </div>
     <h3>Aktivitas Terakhir</h3>
     <div className="kartu">{log.length ? <div className="timeline">{log.map(l => (
-      <div key={l.id}><b>{a.nm(l.oleh)}</b> · {labelModul(l.modul)} {l.aksi}{l.catatan && <> — <span className="kecil">{l.catatan}</span></>}<br /><span className="kecil">{jam(l.waktu)}</span></div>
+      <div key={l.id}><b>{l.oleh ? a.nm(l.oleh) : 'Warga'}</b> · {labelModul(l.modul)} {l.aksi}{l.catatan && <> — <span className="kecil">{l.catatan}</span></>}<br /><span className="kecil">{jam(l.waktu)}</span></div>
     ))}</div> : <div className="kosong">Belum ada aktivitas</div>}</div>
   </>;
 }

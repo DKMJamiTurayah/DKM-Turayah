@@ -6,6 +6,7 @@ import { hitungJadwal, ramadhanTerdekat, tambahHari, LOKASI, WAKTU, WAJIB } from
 import { Btn, Chips, useApp } from './ui';
 import { Skala } from './Maklumat';
 import Tarawih from './Tarawih';
+import TakjilPengurus from './Takjil';
 
 const NAMA = { imsak: 'Imsak', subuh: 'Subuh', terbit: 'Terbit', dhuha: 'Dhuha', dzuhur: 'Dzuhur', ashar: 'Ashar', maghrib: 'Maghrib', isya: 'Isya' };
 const menitWIB = () => (Date.now() / 60000 + 7 * 60) % 1440;
@@ -54,7 +55,7 @@ export function KartuJadwal() {
 
 export default function Jadwal() {
   const a = useApp();
-  const [tab, setTab] = useState('hari');
+  const [tab, setTab] = useState(a.sub.jadwal || 'hari');
   const [, tik] = useState(0);
   useEffect(() => { const iv = setInterval(() => tik(x => x + 1), 30000); return () => clearInterval(iv); }, []);
   const hi = hariIni(), j = hitungJadwal(hi), nx = berikutnya(), rm = infoRamadhan();
@@ -84,7 +85,7 @@ export default function Jadwal() {
 
   return <>
     <h2>Jadwal Shalat & Puasa</h2>
-    <Chips items={[['hari', 'Hari Ini'], ['ramadhan', 'Imsakiyah Ramadhan'], ['tarawih', 'Petugas Tarawih']]} value={tab} onChange={setTab} />
+    <Chips items={[['hari', 'Hari Ini'], ['ramadhan', 'Imsakiyah Ramadhan'], ['tarawih', 'Petugas Tarawih'], ['takjil', 'Takjil']]} value={tab} onChange={setTab} />
 
     {tab === 'hari' ? <>
       <div className="kartu saldo">
@@ -101,7 +102,7 @@ export default function Jadwal() {
         })}
       </div>
       <p className="kecil">Lokasi {LOKASI.nama}. Dihitung dengan metode Kemenag RI (Subuh 20°, Isya 18°, ihtiyat ±2 menit), selisih dengan jadwal resmi Kemenag Kab. Bekasi maksimal 1 menit.</p>
-    </> : tab === 'tarawih' ? (rm.r.hari.length ? <Tarawih rm={rm} /> : <div className="kartu kosong">Jadwal Ramadhan belum tersedia.</div>) : <>
+    </> : tab === 'takjil' ? <TakjilPengurus /> : tab === 'tarawih' ? (rm.r.hari.length ? <Tarawih rm={rm} /> : <div className="kartu kosong">Jadwal Ramadhan belum tersedia.</div>) : <>
       {rm.r.hari.length ? <>
         <div className="kartu">
           <b>Ramadhan {rm.hijri} H</b>
