@@ -41,6 +41,7 @@ export default function Beranda() {
       <button className="btn sek" onClick={() => a.openModal('Setor Keropak Jumat', <FormKeropak />)}>Setor Keropak Jumat</button>
       <button className="btn sek" onClick={() => a.go('maklumat')}>Maklumat Jumat</button>
       <button className="btn sek" onClick={() => a.go('zakat', 'terima')}>Zakat Fitrah &amp; Fidyah</button>
+      <a className="btn sek" href={'https://wa.me/?text=' + encodeURIComponent('Info jadwal shalat, maklumat Jumat & laporan keuangan masjid bisa dilihat di sini (tanpa login):\n' + window.location.origin + '/jamaah')} target="_blank" rel="noreferrer">Sebar Link Halaman Jamaah</a>
       {a.punya('petugas', 'bendahara', 'ketum', 'admin', 'sekretaris') &&
         <button className="btn sek" onClick={() => a.go('iuran', 'catat')}>Catat Iuran Warga</button>}
     </div>
