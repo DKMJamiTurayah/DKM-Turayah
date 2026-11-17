@@ -4,6 +4,7 @@ import { BULAN_P, bulanIni, jam, rp } from '@/lib/util';
 import { Loading, useApp, useLoad } from './ui';
 import { bukaFormPengajuan } from './Pengajuan';
 import { FormKeropak } from './Keropak';
+import { KartuJadwal } from './Jadwal';
 
 const labelModul = m => ({ pengajuan: 'pengajuan', keropak: 'keropak Jumat', iuran: 'iuran warga', kas: 'kas', user: 'pengurus', maklumat: 'maklumat Jumat', intransit: 'intransit kembalian' }[m] || m);
 
@@ -30,6 +31,7 @@ export default function Beranda() {
       <div className="lbl">Saldo Kas DKM</div><div className="angka">{rp(saldo)}</div>
       <div className="baris"><div>Masuk {bln}<b>{rp(masuk)}</b></div><div>Keluar {bln}<b>{rp(keluar)}</b></div></div>
     </div>
+    <KartuJadwal />
     <h3>Tugas Saya</h3>
     {tugas.length ? tugas.map((t, i) => (
       <div key={i} className="tugas" onClick={() => a.go(t.ke, t.sub)}><div className="n">{t.n}</div><div>{t.teks}</div></div>

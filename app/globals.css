@@ -149,3 +149,36 @@ nav.bawah button svg{width:22px;height:22px}
 .mk-bawah span{color:#c9cde3}
 .mk-bawah b{display:block;font-size:30px;font-weight:800;margin-top:6px}
 .mk-bawah .r{text-align:right}
+
+/* jadwal shalat & imsakiyah */
+.jd-mini .jd-jam{font-size:26px;color:var(--hijau);letter-spacing:-.5px}
+.jd-buka{text-align:right;background:var(--emas-muda);border-radius:10px;padding:6px 10px;line-height:1.2}
+.jd-buka span{display:block;font-size:11px;color:var(--kuning)}
+.jd-buka b{display:block;font-size:18px;color:var(--kuning)}
+.jd-baris{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;margin-top:10px}
+.jd-baris div{text-align:center;background:var(--abu-muda);border-radius:8px;padding:5px 2px;line-height:1.2}
+.jd-baris span{display:block;font-size:11px;color:var(--redup)}
+.jd-baris b{font-size:13.5px}
+.jd-baris .on{background:var(--hijau);color:#fff}.jd-baris .on span{color:#d7ece4}
+.jd-ram{margin-top:10px;background:#ffffff22;border-radius:10px;padding:8px 10px;font-size:13.5px}
+.jd-row{display:flex;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--garis)}
+.jd-row:last-child{border-bottom:0}
+.jd-row b{font-size:16px}
+.jd-row.sunah{color:var(--redup)}.jd-row.sunah b{font-weight:500}
+.jd-row.lewat{opacity:.5}
+.jd-row.on{background:var(--hijau-muda);color:var(--hijau);font-weight:700}
+.jd-tabel{font-size:12px;white-space:nowrap;width:100%}
+table.t.jd-tabel th,table.t.jd-tabel td{padding:6px 2px;text-align:center}
+table.t.jd-tabel th{font-size:11px}
+table.t.jd-tabel td:nth-child(2),table.t.jd-tabel th:nth-child(2){text-align:left}
+.jd-tabel .tebal{font-weight:700;color:var(--kuning)}
+.jd-tabel tr.on td{background:var(--hijau-muda);font-weight:700}
+.jd-pt{width:100%;border-collapse:separate;border-spacing:0;font-size:22px;background:var(--kartu-krem);border:2px solid #ead9b3;border-radius:22px;overflow:hidden}
+.jd-pt th{background:var(--navy);color:#fff;font-size:18px;font-weight:700;padding:16px 8px;text-align:center}
+.jd-pt td{text-align:center;padding:9px 8px;border-top:1.5px solid #ece2cd;font-variant-numeric:tabular-nums}
+.jd-pt .l{text-align:left}
+.jd-pt td.ke{font-weight:800}
+.jd-pt th.bk{background:var(--emas);color:var(--navy)}
+.jd-pt td.bk{font-weight:800;background:#fbecc4}
+.jd-pt tr.jm td{background:#efe6d2}.jd-pt tr.jm td.bk{background:#f6dc9c}
+.jd-catatan{text-align:center;font-size:18px;color:var(--redup-mk);margin-top:22px}

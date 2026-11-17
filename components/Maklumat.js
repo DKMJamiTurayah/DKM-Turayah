@@ -192,7 +192,7 @@ function Editor({ awal, riwayat, tutup }) {
 }
 
 // poster dibuat lebar 1080px (ukuran gambar asli), lalu diperkecil agar muat di layar
-function Skala({ children }) {
+export function Skala({ children }) {
   const luar = useRef(), dalam = useRef();
   const [ukur, setUkur] = useState({ s: 0.3, h: 400 });
   useEffect(() => {
