@@ -15,8 +15,8 @@ export default function Kelola() {
 
   return <>
     <h2>Kelola</h2>
-    <Chips items={[['pengurus', 'Pengurus'], ['bidang', 'Bidang'], ['aktivitas', 'Aktivitas']]} value={tab} onChange={k => a.setSub('kelola', k)} />
-    {tab === 'aktivitas' ? <Aktivitas /> : !s.data ? <Loading s={s} /> : tab === 'pengurus' ? <>
+    <Chips items={[['pengurus', 'Pengurus'], ['bidang', 'Bidang'], ['aktivitas', 'Aktivitas'], ...(a.punya('admin') ? [['backup', 'Backup']] : [])]} value={tab} onChange={k => a.setSub('kelola', k)} />
+    {tab === 'backup' && a.punya('admin') ? <Backup /> : tab === 'aktivitas' ? <Aktivitas /> : !s.data ? <Loading s={s} /> : tab === 'pengurus' ? <>
       <p className="kecil">Pengurus mendaftar sendiri lewat halaman login (&quot;Daftar Pengurus&quot;), lalu jabatannya diatur di sini.</p>
       {s.data.slice().sort((x, y) => (x.role === 'pending' ? 0 : 1) - (y.role === 'pending' ? 0 : 1)).map(p => (
         <div className="kartu klik" key={p.id} onClick={() => a.openModal('Atur Pengurus', <FormUser p={p} />)}>
@@ -120,4 +120,69 @@ function Aktivitas() {
       <div className="kecil">Masuk {jam(x.mulai)} · halaman terakhir: {NAMA_HAL[x.halaman] || x.halaman || '—'}</div></div>)
       : <div className="kartu kosong">Belum ada kunjungan tercatat</div>}
   </>;
+}
+
+/* ====== Backup semua data (khusus admin) ====== */
+const NAMA_SHEET = {
+  profiles: 'Pengurus (Akun)', bidang: 'Bidang', pos_dana: 'Pos Dana', kas: 'Kas',
+  pengajuan: 'Pengajuan Anggaran', pengajuan_item: 'Rincian Pengajuan', intransit: 'Intransit',
+  keropak_jumat: 'Keropak Jumat', iuran: 'Iuran Warga', warga: 'Data Warga', maklumat: 'Maklumat Jumat',
+  zakat_tahun: 'Zakat - Setting Tahun', zakat_terima: 'Zakat - Penerimaan', zakat_salur: 'Zakat - Penyaluran',
+  qurban_setting: 'Qurban - Setting', qurban_peserta: 'Qurban - Peserta', qurban_bayar: 'Qurban - Pembayaran',
+  qurban_bagi: 'Qurban - Pembagian', tarawih: 'Petugas Tarawih', takjil: 'Jadwal Takjil', takjil_setting: 'Takjil - Setting',
+  inventaris: 'Inventaris', pinjam: 'Peminjaman', pinjam_item: 'Rincian Peminjaman',
+  log_aktivitas: 'Log Aktivitas', sesi_aplikasi: 'Sesi Aplikasi'
+};
+
+function Backup() {
+  const a = useApp();
+  const [info, setInfo] = useState(null);
+  const unduh = async () => {
+    const data = await rpc('backup_semua_data');
+    const ExcelJS = (await import('exceljs')).default;
+    const wb = new ExcelJS.Workbook();
+    wb.creator = 'DKM Masjid Jami Turayah';
+    const tgl = new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Jakarta' });
+    const ws0 = wb.addWorksheet('Info Backup');
+    ws0.addRow(['Backup Semua Data — DKM Masjid Jami Turayah']).font = { bold: true, size: 14 };
+    ws0.addRow(['Dibuat ' + jam(data.dibuat) + ' oleh ' + a.me.nama]);
+    ws0.addRow(['Simpan di tempat aman. Foto/berkas unggahan tidak ikut, hanya nama/link berkasnya.']).font = { color: { argb: 'FFC00000' } };
+    ws0.addRow([]);
+    ws0.addRow(['Sheet', 'Tabel database', 'Jumlah baris']).font = { bold: true };
+    const dipakai = new Set(['Info Backup']);
+    const tabel = Object.keys(data.tabel).sort((x, y) => (NAMA_SHEET[x] ? 0 : 1) - (NAMA_SHEET[y] ? 0 : 1)
+      || Object.keys(NAMA_SHEET).indexOf(x) - Object.keys(NAMA_SHEET).indexOf(y) || x.localeCompare(y));
+    let total = 0;
+    for (const t of tabel) {
+      const rows = data.tabel[t] || [];
+      total += rows.length;
+      let nama = (NAMA_SHEET[t] || t).replace(/[\\/?*[\]:]/g, '-').slice(0, 31);
+      for (let i = 2; dipakai.has(nama); i++) nama = nama.slice(0, 28) + ' ' + i;
+      dipakai.add(nama);
+      ws0.addRow([nama, t, rows.length]);
+      const ws = wb.addWorksheet(nama);
+      const kolom = [...new Set(rows.flatMap(r => Object.keys(r)))];
+      if (!kolom.length) { ws.addRow(['(kosong)']); continue; }
+      ws.columns = kolom.map(k => ({ header: k, key: k, width: Math.min(40, Math.max(12, k.length + 2)) }));
+      ws.getRow(1).font = { bold: true };
+      ws.views = [{ state: 'frozen', ySplit: 1 }];
+      rows.forEach(r => ws.addRow(kolom.map(k => r[k] === null || r[k] === undefined ? null : typeof r[k] === 'object' ? JSON.stringify(r[k]) : r[k])));
+    }
+    ws0.columns = [{ width: 28 }, { width: 22 }, { width: 14 }];
+    const buf = await wb.xlsx.writeBuffer();
+    const url = URL.createObjectURL(new Blob([buf], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }));
+    const el = document.createElement('a');
+    el.href = url; el.download = 'Backup-DKM-Turayah-' + tgl + '.xlsx';
+    document.body.appendChild(el); el.click(); el.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 5000);
+    setInfo(tabel.length + ' tabel · ' + total.toLocaleString('id-ID') + ' baris');
+    a.toast('Backup terunduh');
+  };
+  return <div className="kartu">
+    <b>Backup semua data</b>
+    <p className="kecil">Sekali klik mengunduh satu file Excel berisi semua data aplikasi (satu tabel per sheet), untuk disimpan di flashdisk. Tabel baru otomatis ikut.</p>
+    <Btn className="btn penuh" onClick={unduh}>⬇ Unduh Backup (.xlsx)</Btn>
+    {info && <p className="kecil masuk" style={{ marginTop: 8 }}>✓ Terakhir diunduh: {info}</p>}
+    <p className="kecil" style={{ marginTop: 8 }}>Foto/berkas unggahan tidak ikut, hanya nama/link berkasnya. File ini berisi nomor HP pengurus dan data warga — simpan di tempat aman.</p>
+  </div>;
 }
