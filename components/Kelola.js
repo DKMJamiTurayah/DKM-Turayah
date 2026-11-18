@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { sb, rpc, q } from '@/lib/supabase';
 import { ROLE, jam } from '@/lib/util';
 import { Btn, Chips, Field, Loading, useApp, useLoad } from './ui';
+import { JalurInfo, susunInfo } from './InfoBerjalan';
 
 export default function Kelola() {
   const a = useApp();
@@ -15,8 +16,8 @@ export default function Kelola() {
 
   return <>
     <h2>Kelola</h2>
-    <Chips items={[['pengurus', 'Pengurus'], ['bidang', 'Bidang'], ['aktivitas', 'Aktivitas'], ...(a.punya('admin') ? [['backup', 'Backup']] : [])]} value={tab} onChange={k => a.setSub('kelola', k)} />
-    {tab === 'backup' && a.punya('admin') ? <Backup /> : tab === 'aktivitas' ? <Aktivitas /> : !s.data ? <Loading s={s} /> : tab === 'pengurus' ? <>
+    <Chips items={[['pengurus', 'Pengurus'], ['bidang', 'Bidang'], ['info', 'Info Berjalan'], ['aktivitas', 'Aktivitas'], ...(a.punya('admin') ? [['backup', 'Backup']] : [])]} value={tab} onChange={k => a.setSub('kelola', k)} />
+    {tab === 'backup' && a.punya('admin') ? <Backup /> : tab === 'info' ? <KelolaInfo /> : tab === 'aktivitas' ? <Aktivitas /> : !s.data ? <Loading s={s} /> : tab === 'pengurus' ? <>
       <p className="kecil">Pengurus mendaftar sendiri lewat halaman login (&quot;Daftar Pengurus&quot;), lalu jabatannya diatur di sini.</p>
       {s.data.slice().sort((x, y) => (x.role === 'pending' ? 0 : 1) - (y.role === 'pending' ? 0 : 1)).map(p => (
         <div className="kartu klik" key={p.id} onClick={() => a.openModal('Atur Pengurus', <FormUser p={p} />)}>
@@ -185,4 +186,74 @@ function Backup() {
     {info && <p className="kecil masuk" style={{ marginTop: 8 }}>✓ Terakhir diunduh: {info}</p>}
     <p className="kecil" style={{ marginTop: 8 }}>Foto/berkas unggahan tidak ikut, hanya nama/link berkasnya. File ini berisi nomor HP pengurus dan data warga — simpan di tempat aman.</p>
   </div>;
+}
+
+/* ====== Tulisan berjalan (Admin & Ketum) ====== */
+function KelolaInfo() {
+  const a = useApp();
+  const [n, setN] = useState(0);
+  const s = useLoad(async () => {
+    const [set] = await q(sb().from('info_berjalan_setting').select('*').eq('id', 1));
+    const pesan = await q(sb().from('info_berjalan').select('*').order('urutan').order('id'));
+    const pratinjau = await rpc('info_berjalan_publik');
+    return { set, pesan, pratinjau };
+  }, [n, a.refreshKey]);
+  if (!s.data) return s.err?.includes('info_berjalan')
+    ? <div className="kartu kosong">Jalankan dulu SQL <b>006_info_berjalan.sql</b> di Supabase.</div> : <Loading s={s} />;
+  const { set, pesan, pratinjau } = s.data;
+  const muat = () => { setN(x => x + 1); a.refresh(); };
+  const ubahSet = async d => { await q(sb().from('info_berjalan_setting').update({ ...d, diubah_by: a.me.id, diubah_at: new Date().toISOString() }).eq('id', 1)); muat(); };
+  const items = susunInfo(pratinjau);
+  return <>
+    <p className="kecil">Tulisan berjalan tampil di atas aplikasi pengurus dan di halaman jamaah. Berhenti saat disentuh supaya bisa dibaca.</p>
+    <div className="kartu" style={{ padding: 0, overflow: 'hidden' }}>
+      {items.length ? <JalurInfo items={items} /> : <div className="kosong" style={{ padding: 14 }}>{set?.aktif ? 'Belum ada isi' : 'Tulisan berjalan sedang dimatikan'}</div>}
+    </div>
+    <div className="kartu">
+      <label className="f"><input type="checkbox" checked={!!set?.aktif} onChange={e => ubahSet({ aktif: e.target.checked }).catch(er => a.toast(er.message, true))} /> <b>Tampilkan tulisan berjalan</b></label>
+      <FormSalam set={set} simpan={ubahSet} />
+      <label className="f"><input type="checkbox" checked={!!set?.auto_jumat} onChange={e => ubahSet({ auto_jumat: e.target.checked }).catch(er => a.toast(er.message, true))} /> Otomatis tampilkan petugas Jumat terdekat (dari Maklumat)</label>
+      <label className="f"><input type="checkbox" checked={!!set?.auto_saldo} onChange={e => ubahSet({ auto_saldo: e.target.checked }).catch(er => a.toast(er.message, true))} /> Otomatis tampilkan total saldo kas</label>
+    </div>
+    <div className="baris-flex"><h3 className="spasi">Pesan ({pesan.length})</h3>
+      <button className="btn kecil" onClick={() => a.openModal('Tambah Pesan', <FormPesan selesai={muat} urutan={pesan.length} />)}>+ Tambah Pesan</button></div>
+    {pesan.length ? pesan.map(p => (
+      <div className="kartu klik" key={p.id} style={p.aktif ? {} : { opacity: .5 }} onClick={() => a.openModal('Ubah Pesan', <FormPesan p={p} selesai={muat} />)}>
+        <div>{p.teks}</div><div className="kecil">{p.aktif ? 'Tampil' : 'Disembunyikan'} · urutan {p.urutan}</div>
+      </div>)) : <div className="kartu kosong">Belum ada pesan. Contoh: "Kajian rutin setiap Ahad ba'da Subuh".</div>}
+  </>;
+}
+
+function FormSalam({ set, simpan }) {
+  const a = useApp();
+  const [v, setV] = useState(set?.salam || '');
+  return <>
+    <Field id="ibSalam" label="Pembuka (boleh tulisan Arab singkat, kosongkan kalau tidak perlu)" dir="auto" value={v} onChange={e => setV(e.target.value)} />
+    <div className="aksi" style={{ marginTop: 6 }}><Btn className="btn sek kecil" onClick={async () => { await simpan({ salam: v.trim() || null }); a.toast('Tersimpan'); }}>Simpan pembuka</Btn></div>
+  </>;
+}
+
+function FormPesan({ p, selesai, urutan = 0 }) {
+  const a = useApp();
+  const [f, setF] = useState({ teks: p?.teks || '', aktif: p ? p.aktif : true, urutan: p?.urutan ?? urutan });
+  const simpan = async () => {
+    const d = { teks: f.teks.trim(), aktif: f.aktif, urutan: +f.urutan || 0 };
+    if (d.teks.length < 3) return a.toast('Isi pesan minimal 3 huruf', true);
+    if (d.teks.length > 200) return a.toast('Pesan maksimal 200 huruf', true);
+    await q(p ? sb().from('info_berjalan').update(d).eq('id', p.id) : sb().from('info_berjalan').insert({ ...d, dibuat_by: a.me.id }));
+    a.closeModal(); a.toast('Tersimpan'); selesai();
+  };
+  const hapus = async () => {
+    if (!confirm('Hapus pesan ini?')) return;
+    await q(sb().from('info_berjalan').delete().eq('id', p.id));
+    a.closeModal(); a.toast('Dihapus'); selesai();
+  };
+  return <>
+    <label className="f" htmlFor="ibTeks">Isi pesan ({f.teks.length}/200)</label>
+    <textarea className="f" id="ibTeks" rows={3} maxLength={200} dir="auto" value={f.teks} onChange={e => setF({ ...f, teks: e.target.value })}
+      placeholder="contoh: Kajian rutin setiap Ahad ba'da Subuh bersama Ust. ..." />
+    <Field id="ibUrut" label="Urutan tampil (kecil = duluan)" type="number" value={f.urutan} onChange={e => setF({ ...f, urutan: e.target.value })} />
+    <label className="f"><input type="checkbox" checked={f.aktif} onChange={e => setF({ ...f, aktif: e.target.checked })} /> Tampilkan</label>
+    <div className="aksi">{p && <Btn className="btn merah-sek" onClick={hapus}>Hapus</Btn>}<Btn onClick={simpan}>Simpan</Btn></div>
+  </>;
 }

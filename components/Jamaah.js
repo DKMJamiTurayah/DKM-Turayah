@@ -7,6 +7,7 @@ import { hitungJadwal, tambahHari, LOKASI, WAJIB } from '@/lib/jadwal';
 import { AppCtx, Btn, Loading, LogoMasjid, useApp } from './ui';
 import { Poster, Skala } from './Maklumat';
 import { hariTakjil } from './Takjil';
+import InfoBerjalan from './InfoBerjalan';
 
 const NAMA = { imsak: 'Imsak', subuh: 'Subuh', dzuhur: 'Dzuhur', ashar: 'Ashar', maghrib: 'Maghrib', isya: 'Isya' };
 const menitWIB = () => (Date.now() / 60000 + 7 * 60) % 1440;
@@ -58,6 +59,7 @@ function Isi() {
 
   return <>
     <div className="jm-head"><LogoMasjid size={44} /><div><b>{NAMA_DKM}</b><span>{LOKASI.nama}</span></div></div>
+    <InfoBerjalan />
     <div className="jm-wrap">
       <div className="kartu saldo">
         <div className="lbl">{tglPanjang(hi)}</div>

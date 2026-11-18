@@ -17,6 +17,7 @@ import Jadwal from './Jadwal';
 import Zakat from './Zakat';
 import Qurban from './Qurban';
 import Inventaris from './Inventaris';
+import InfoBerjalan from './InfoBerjalan';
 
 const HALAMAN = { beranda: Beranda, jadwal: Jadwal, pengajuan: Pengajuan, keropak: Keropak, iuran: Iuran, kas: Kas, intransit: Intransit, maklumat: Maklumat, zakat: Zakat, qurban: Qurban, inventaris: Inventaris, kelola: Kelola };
 
@@ -202,6 +203,7 @@ export default function App() {
           <span>{me.nama} · {me.jabatan || ROLE[me.role]}{me.role === 'ketua_bidang' ? ' · ' + pendek(ctx.bn(me.bidang_id)) : ''}</span></div>
         <button onClick={() => ctx.openModal('Akun Saya', <Akun />)}>Akun</button>
       </header>
+      <InfoBerjalan muatUlang={refreshKey} />
       <main id="hal"><Hal key={h} /></main>
       <nav className="bawah"><div className="in">
         {menu.map(([k, l]) => (
