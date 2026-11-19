@@ -218,22 +218,7 @@ export function Poster({ d, lap, ref }) {
   const judul = (d.nama_masjid || '').trim();
   return <div ref={ref} className="mk">
     <div className="mk-atas" style={{ position: 'relative' }}>
-      <img src="/logo-masjid-jamie-jelas.png" alt="" style={{
-        position: 'absolute', top: 24, right: 8, zIndex: 2,
-        width: 190, height: 190, objectFit: 'contain',
-        background: '#fff', borderRadius: 24, padding: 8,
-      }} />
-      <svg className="mk-hias" width="230" height="200" viewBox="0 0 230 200" aria-hidden="true">
-        <g stroke="#c9a14d" strokeWidth="2.2" opacity=".85">
-          <line x1="82" y1="18" x2="40" y2="78" /><line x1="82" y1="18" x2="128" y2="58" /><line x1="128" y1="58" x2="186" y2="24" />
-          <line x1="40" y1="78" x2="114" y2="128" /><line x1="128" y1="58" x2="114" y2="128" />
-          <line x1="114" y1="128" x2="64" y2="168" /><line x1="114" y1="128" x2="176" y2="160" />
-        </g>
-        <circle cx="82" cy="18" r="14" fill="#f2bb48" /><circle cx="128" cy="58" r="10" fill="#f2bb48" />
-        <circle cx="186" cy="24" r="5.5" fill="#c9a14d" /><circle cx="40" cy="78" r="8.5" fill="#c9a14d" />
-        <circle cx="114" cy="128" r="11" fill="#f2bb48" /><circle cx="64" cy="168" r="6" fill="#c9a14d" />
-        <circle cx="176" cy="160" r="6" fill="#c9a14d" />
-      </svg>
+      <img src="/logo-masjid-jamie-jelas.png" alt="" style={{ position: 'absolute', top: 40, right: 56, zIndex: 2, width: 170, height: 170, objectFit: 'contain', background: '#fff', borderRadius: 24, padding: 8 }} />
       <div className="mk-kicker">Maklumat Jum&apos;at</div>
       <div className="mk-judul">{judul}</div>
       {d.alamat && <div className="mk-alamat">{d.alamat}</div>}
