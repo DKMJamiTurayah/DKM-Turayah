@@ -16,8 +16,8 @@ export default function Kelola() {
 
   return <>
     <h2>Kelola</h2>
-    <Chips items={[['pengurus', 'Pengurus'], ['bidang', 'Bidang'], ['info', 'Info Berjalan'], ['aktivitas', 'Aktivitas'], ...(a.punya('admin') ? [['backup', 'Backup']] : [])]} value={tab} onChange={k => a.setSub('kelola', k)} />
-    {tab === 'backup' && a.punya('admin') ? <Backup /> : tab === 'info' ? <KelolaInfo /> : tab === 'aktivitas' ? <Aktivitas /> : !s.data ? <Loading s={s} /> : tab === 'pengurus' ? <>
+    <Chips items={[['pengurus', 'Pengurus'], ['bidang', 'Bidang'], ['info', 'Info Berjalan'], ...(a.punya('admin') ? [['aktivitas', 'Aktivitas'], ['backup', 'Backup']] : [])]} value={tab} onChange={k => a.setSub('kelola', k)} />
+    {tab === 'backup' && a.punya('admin') ? <Backup /> : tab === 'info' ? <KelolaInfo /> : tab === 'aktivitas' && a.punya('admin') ? <Aktivitas /> : !s.data ? <Loading s={s} /> : tab === 'pengurus' ? <>
       <p className="kecil">Pengurus mendaftar sendiri lewat halaman login (&quot;Daftar Pengurus&quot;), lalu jabatannya diatur di sini.</p>
       {s.data.slice().sort((x, y) => (x.role === 'pending' ? 0 : 1) - (y.role === 'pending' ? 0 : 1)).map(p => (
         <div className="kartu klik" key={p.id} onClick={() => a.openModal('Atur Pengurus', <FormUser p={p} />)}>
@@ -83,7 +83,7 @@ function FormBidang({ b }) {
   </>;
 }
 
-const NAMA_HAL = { beranda: 'Beranda', pengajuan: 'Pengajuan', keropak: 'Keropak', iuran: 'Iuran', kas: 'Kas', intransit: 'Intransit', maklumat: 'Maklumat', kelola: 'Kelola' };
+const NAMA_HAL = { beranda: 'Beranda', jadwal: 'Jadwal', pengajuan: 'Pengajuan', keropak: 'Keropak', iuran: 'Iuran', kas: 'Kas', laporan: 'Laporan', intransit: 'Intransit', maklumat: 'Maklumat', zakat: 'Zakat', qurban: 'Qurban', inventaris: 'Inventaris', kelola: 'Kelola' };
 const ONLINE_MS = 150000; // dianggap online kalau ping terakhir < 2,5 menit lalu (ping tiap 1 menit saat layar terbuka)
 
 function lalu(t) {
