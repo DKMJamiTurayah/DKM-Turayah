@@ -7,7 +7,7 @@ import '@fontsource/plus-jakarta-sans/600.css';
 import '@fontsource/plus-jakarta-sans/700.css';
 import '@fontsource/plus-jakarta-sans/800.css';
 import { sb, rpc, q } from '@/lib/supabase';
-import { jam, jumatDepan, pesanError, rp, tglPanjang } from '@/lib/util';
+import { BULAN_P, jam, jumatDepan, pesanError, rp, tglPanjang } from '@/lib/util';
 import { Btn, Field, Loading, useApp, useLoad } from './ui';
 
 // isian awal kalau belum pernah ada maklumat sama sekali
@@ -31,8 +31,10 @@ const HURUF = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 export default function Maklumat() {
   const a = useApp();
   const [buka, setBuka] = useState(null);   // null = daftar, { ...data } = editor
+  const [jadwal, setJadwal] = useState(false);
   const s = useLoad(() => q(sb().from('maklumat').select('*').order('tanggal', { ascending: false }).limit(60)), [a.refreshKey]);
 
+  if (jadwal) return <JadwalKhatib riwayat={s.data || []} tutup={() => setJadwal(false)} />;
   if (buka) return <Editor awal={buka} riwayat={s.data || []} tutup={() => { setBuka(null); a.refresh(); }} />;
   if (!s.data) return <Loading s={s} />;
 
@@ -49,6 +51,7 @@ export default function Maklumat() {
 
   return <>
     <div className="baris-flex"><h2 className="spasi">Maklumat Jumat</h2>
+      <button className="btn sek kecil" onClick={() => setJadwal(true)}>Jadwal Khatib</button>
       {bolehBuat(a) && <button className="btn kecil" onClick={baru}>+ Maklumat {tglPanjang(jumatDepan()).replace('Jumat, ', '')}</button>}</div>
     <p className="kecil">Laporan keuangan terisi otomatis dari Buku Kas per pos dana. Isian lain otomatis disalin dari maklumat minggu lalu, tinggal ganti petugasnya.{!bolehBuat(a) && ' Yang bisa membuat maklumat hanya pengurus yang ditunjuk Admin / Ketum, Anda bisa melihat & mengunduh.'}</p>
     {s.data.length ? s.data.map(m => (
@@ -262,3 +265,106 @@ export function Poster({ d, lap, ref }) {
   </div>;
         }
     
+
+/* ====== Jadwal Khatib per bulan (rekap + rencana ke depan) ====== */
+const bulanJumat = bln => {
+  const [t, b] = bln.split('-').map(Number), out = [];
+  for (let d = new Date(Date.UTC(t, b - 1, 1)); d.getUTCMonth() === b - 1; d.setUTCDate(d.getUTCDate() + 1))
+    if (d.getUTCDay() === 5) out.push(d.toISOString().slice(0, 10));
+  return out;
+};
+const tglJumat = x => { const d = new Date(x + 'T00:00:00Z'); return d.getUTCDate() + ' ' + BULAN_P[d.getUTCMonth()]; };
+
+function JadwalKhatib({ riwayat, tutup }) {
+  const a = useApp();
+  const boleh = bolehBuat(a);
+  const [bln, setBln] = useState(jumatDepan().slice(0, 7));
+  const [th, bl] = bln.split('-').map(Number);
+  const poster = useRef();
+  const jumat = bulanJumat(bln);
+  const s = useLoad(() => q(sb().from('maklumat').select('*').gte('tanggal', jumat[0]).lte('tanggal', jumat[jumat.length - 1])), [bln, a.refreshKey]);
+  const geser = d => { let t = th, b = bl + d; if (b < 1) { b = 12; t--; } if (b > 12) { b = 1; t++; } setBln(t + '-' + String(b).padStart(2, '0')); };
+  const judul = BULAN_P[bl - 1] + ' ' + th;
+  const baris = jumat.map(t => ({ tanggal: t, m: (s.data || []).find(x => x.tanggal === t) }));
+  const rekap = {};
+  baris.forEach(r => { const k = r.m?.khatib?.trim(); if (k) rekap[k] = (rekap[k] || 0) + 1; });
+  const isi = t => {
+    const ada = (s.data || []).find(x => x.tanggal === t);
+    if (ada) return ada;
+    const dasar = riwayat.find(x => x.tanggal < t) || riwayat[riwayat.length - 1];
+    const x = {}; KOLOM.forEach(k => { x[k] = dasar ? dasar[k] : BAWAAN[k]; });
+    if (!x.kegiatan?.length) x.kegiatan = BAWAAN.kegiatan;
+    return { ...x, khatib: '', muadzin: '', tanggal: t };
+  };
+  const unduh = async () => {
+    await document.fonts?.ready;
+    const opsi = { pixelRatio: 1, cacheBust: true, backgroundColor: '#f6eedf' };
+    await toPng(poster.current, opsi);
+    const url = await toPng(poster.current, opsi);
+    const el = document.createElement('a'); el.href = url; el.download = `jadwal-khatib-${bln}.png`; el.click();
+    a.toast('Gambar diunduh');
+  };
+
+  return <>
+    <div className="baris-flex"><button className="btn sek kecil" onClick={tutup}>‹ Kembali</button><h2 className="spasi">Jadwal Khatib</h2></div>
+    <div className="kartu baris-flex"><button className="btn sek kecil" onClick={() => geser(-1)}>‹</button>
+      <b className="spasi" style={{ textAlign: 'center' }}>{judul}</b><button className="btn sek kecil" onClick={() => geser(1)}>›</button></div>
+    <p className="kecil">Terisi otomatis dari maklumat tiap Jumat.{boleh ? ' Ketuk tanggal untuk mengisi atau merencanakan petugas Jumat ke depan.' : ''}</p>
+    {!s.data ? <Loading s={s} /> : <>
+      {baris.map(r => <div key={r.tanggal} className={'kartu' + (boleh ? ' klik' : '')}
+        onClick={() => boleh && a.openModal('Petugas Jumat ' + tglJumat(r.tanggal), <FormPetugas awal={isi(r.tanggal)} riwayat={riwayat} />)}>
+        <div className="baris-flex"><b className="spasi">Jumat, {tglJumat(r.tanggal)}</b>
+          {!r.m?.khatib && <span className="badge b-kuning">belum diisi</span>}</div>
+        <div className="kecil">Khatib: <b>{r.m?.khatib || '-'}</b> · Muadzin: {r.m?.muadzin || '-'}</div>
+      </div>)}
+      {Object.keys(rekap).length > 0 && <div className="kartu"><b>Rekap khatib {judul}</b>
+        <table className="t" style={{ marginTop: 6 }}><tbody>{Object.entries(rekap).sort((x, y) => y[1] - x[1]).map(([n, c]) =>
+          <tr key={n}><td>{n}</td><td className="r tebal">{c}x</td></tr>)}</tbody></table></div>}
+      <h3>Gambar jadwal</h3>
+      <Skala><PosterJadwal ref={poster} judul={judul} baris={baris} /></Skala>
+      <div className="aksi"><Btn onClick={unduh}>Unduh Gambar</Btn></div>
+    </>}
+  </>;
+}
+
+function FormPetugas({ awal, riwayat }) {
+  const a = useApp();
+  const [f, setF] = useState({ khatib: awal.khatib || '', muadzin: awal.muadzin || '' });
+  const nama = k => [...new Set(riwayat.map(m => m[k]).filter(Boolean))];
+  const simpan = async () => {
+    await rpc('simpan_maklumat', { p: { ...awal, khatib: f.khatib.trim(), muadzin: f.muadzin.trim() } });
+    a.closeModal(); a.toast('Petugas tersimpan'); a.refresh();
+  };
+  return <>
+    <Field id="jKhatib" label="Khatib dan imam" list="jdlKhatib" value={f.khatib} onChange={e => setF({ ...f, khatib: e.target.value })} />
+    <Field id="jMuadzin" label="Muadzin dan bilal" list="jdlMuadzin" value={f.muadzin} onChange={e => setF({ ...f, muadzin: e.target.value })} />
+    <datalist id="jdlKhatib">{nama('khatib').map(x => <option key={x} value={x} />)}</datalist>
+    <datalist id="jdlMuadzin">{nama('muadzin').map(x => <option key={x} value={x} />)}</datalist>
+    <div className="aksi"><Btn onClick={simpan}>Simpan</Btn></div>
+    <p className="kecil">Tersimpan sebagai maklumat Jumat tanggal ini. Isian lainnya (kegiatan, rekening, dll) disalin dari maklumat sebelumnya dan bisa diubah nanti di menu Maklumat.</p>
+  </>;
+}
+
+function PosterJadwal({ judul, baris, ref }) {
+  return <div ref={ref} className="mk">
+    <div className="mk-atas" style={{ paddingBottom: 70 }}>
+      <img src="/logo-masjid-jamie-jelas.png" alt="" style={{ position: 'absolute', top: 40, right: 56, width: 170, height: 170, objectFit: 'contain', background: '#fff', borderRadius: 24, padding: 8 }} />
+      <div className="mk-kicker">Jadwal Petugas Jum&apos;at</div>
+      <div className="mk-judul">{judul}</div>
+      <div className="mk-alamat">Masjid Jami Turayah</div>
+    </div>
+    <div style={{ padding: '44px 56px 50px' }}>
+      {baris.map(r => <div key={r.tanggal} style={{ display: 'flex', gap: 24, alignItems: 'center', background: '#fcf8ef', border: '2px solid #ead9b3', borderRadius: 20, padding: '22px 28px', marginBottom: 16 }}>
+        <div style={{ flex: 'none', width: 150, textAlign: 'center', background: '#1c2452', color: '#fff', borderRadius: 16, padding: '12px 0' }}>
+          <div style={{ fontSize: 20, color: '#f2bb48', fontWeight: 700 }}>Jumat</div>
+          <div style={{ fontSize: 34, fontWeight: 800 }}>{tglJumat(r.tanggal).replace(/ (\w{3})\w*$/, ' $1')}</div></div>
+        <div style={{ flex: 1 }}>
+          <div style={{ fontSize: 19, color: '#5f6680', fontWeight: 600 }}>Khatib dan imam</div>
+          <div style={{ fontSize: 30, fontWeight: 800 }}>{r.m?.khatib || '……………………'}</div>
+          <div style={{ fontSize: 19, color: '#5f6680', fontWeight: 600, marginTop: 8 }}>Muadzin dan bilal</div>
+          <div style={{ fontSize: 24, fontWeight: 700 }}>{r.m?.muadzin || '……………………'}</div>
+        </div></div>)}
+    </div>
+    <div className="mk-bawah" style={{ padding: '26px 56px', justifyContent: 'center' }}><span>DKM Masjid Jami Turayah</span></div>
+  </div>;
+}
