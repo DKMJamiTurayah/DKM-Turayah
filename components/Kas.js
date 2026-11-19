@@ -43,7 +43,7 @@ export default function Kas() {
   {sp.data && <div className="kartu">
       <div className="baris-flex"><b className="spasi">Saldo per pos dana</b>
         {a.punya('bendahara', 'admin') && <button className="btn sek kecil" onClick={() => a.openModal('Pindah Dana Antar Pos', <FormPindah pos={posList.filter(p => p.aktif)} saldo={sp.data.saldo} />)}>Pindah</button>}
-        {a.punya('bendahara', 'admin', 'ketum') && <button className="btn sek kecil" onClick={() => a.openModal('Atur Pos Dana', <AturPos list={posList} />)}>Atur</button>}</div>
+        {a.punya('admin', 'ketum') && <button className="btn sek kecil" onClick={() => a.openModal('Atur Pos Dana', <AturPos list={posList} />)}>Atur</button>}</div>
       <table className="t" style={{ marginTop: 6 }}><tbody>
         {sp.data.saldo.filter(r => pos === 'semua' || String(r.pos_id) === pos).map(r => <tr key={r.pos_id}><td>{r.nama}</td><td className="r tebal">{rp(r.total)}</td></tr>)}
         {pos === 'semua' && <tr><td className="tebal">Total</td><td className="r tebal masuk">{rp(sp.data.saldo.reduce((x, r) => x + +r.total, 0))}</td></tr>}

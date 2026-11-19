@@ -125,7 +125,7 @@ function Aktivitas() {
 
 /* ====== Backup semua data (khusus admin) ====== */
 const NAMA_SHEET = {
-  profiles: 'Pengurus (Akun)', bidang: 'Bidang', pos_dana: 'Pos Dana', kas: 'Kas',
+  profiles: 'Pengurus (Akun)', struktur_dkm: 'Struktur DKM', bidang: 'Bidang', pos_dana: 'Pos Dana', kas: 'Kas',
   pengajuan: 'Pengajuan Anggaran', pengajuan_item: 'Rincian Pengajuan', intransit: 'Intransit',
   keropak_jumat: 'Keropak Jumat', iuran: 'Iuran Warga', warga: 'Data Warga', maklumat: 'Maklumat Jumat',
   zakat_tahun: 'Zakat - Setting Tahun', zakat_terima: 'Zakat - Penerimaan', zakat_salur: 'Zakat - Penyaluran',
