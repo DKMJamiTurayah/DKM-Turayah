@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { sb } from '@/lib/supabase';
 import { NAMA_DKM, keEmail } from '@/lib/util';
 import { Btn, Field, LogoMasjid, useApp } from './ui';
+import CreditLZA from './CreditLZA';
 
 export default function Login() {
   const a = useApp();
@@ -51,6 +52,7 @@ export default function Login() {
       <Btn id="lBtn" className="btn penuh" style={{ marginTop: 16 }} onClick={mode === 'daftar' ? daftar : masuk}>
         {mode === 'daftar' ? 'Daftar' : 'Masuk'}</Btn>
       {mode === 'daftar' && <p className="kecil" style={{ marginBottom: 0 }}>Setelah daftar, Admin / Ketua Umum akan mengatur jabatan Anda.</p>}
+      <CreditLZA />
     </div></div>
   );
 }
