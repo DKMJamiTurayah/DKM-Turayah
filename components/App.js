@@ -18,8 +18,9 @@ import Zakat from './Zakat';
 import Qurban from './Qurban';
 import Inventaris from './Inventaris';
 import InfoBerjalan from './InfoBerjalan';
+import Laporan, { IK_LAPORAN } from './Laporan';
 
-const HALAMAN = { beranda: Beranda, jadwal: Jadwal, pengajuan: Pengajuan, keropak: Keropak, iuran: Iuran, kas: Kas, intransit: Intransit, maklumat: Maklumat, zakat: Zakat, qurban: Qurban, inventaris: Inventaris, kelola: Kelola };
+const HALAMAN = { beranda: Beranda, jadwal: Jadwal, pengajuan: Pengajuan, keropak: Keropak, iuran: Iuran, kas: Kas, laporan: Laporan, intransit: Intransit, maklumat: Maklumat, zakat: Zakat, qurban: Qurban, inventaris: Inventaris, kelola: Kelola };
 
 // daftar tugas yang menunggu tindakan user ini (dipakai di beranda & badge menu)
 // auto logout: keluar sendiri kalau tidak ada aktivitas selama 15 menit
@@ -166,7 +167,7 @@ export default function App() {
     return () => { hidup = false; sesiRef.current = null; clearInterval(iv); };
   }, [status, me?.id, kirimPing]);
   useEffect(() => { halRef.current = hal; kirimPing(); }, [hal, kirimPing]);
-  const menu = [['beranda', 'Beranda'], ['jadwal', 'Jadwal'], ['pengajuan', 'Pengajuan'], ['keropak', 'Keropak'], ['iuran', 'Iuran'], ['kas', 'Kas'], ['intransit', 'Intransit'], ['maklumat', 'Maklumat'], ['zakat', 'Zakat'], ['qurban', 'Qurban'], ['inventaris', 'Inventaris']];
+  const menu = [['beranda', 'Beranda'], ['jadwal', 'Jadwal'], ['pengajuan', 'Pengajuan'], ['keropak', 'Keropak'], ['iuran', 'Iuran'], ['kas', 'Kas'], ['laporan', 'Laporan'], ['intransit', 'Intransit'], ['maklumat', 'Maklumat'], ['zakat', 'Zakat'], ['qurban', 'Qurban'], ['inventaris', 'Inventaris']];
   if (punya('admin', 'ketum')) menu.push(['kelola', 'Kelola']);
 
   const ctx = {
@@ -208,7 +209,7 @@ export default function App() {
       <nav className="bawah"><div className="in">
         {menu.map(([k, l]) => (
           <button key={k} id={'nav-' + k} className={h === k ? 'on' : ''} onClick={() => ctx.go(k)}>
-            <span dangerouslySetInnerHTML={{ __html: IK[k] }} style={{ display: 'contents' }} />
+            <span dangerouslySetInnerHTML={{ __html: k === 'laporan' ? IK_LAPORAN : IK[k] }} style={{ display: 'contents' }} />
             <span>{l}</span>{badge[k] ? <span className="dot">{badge[k]}</span> : null}
           </button>))}
       </div></nav>
