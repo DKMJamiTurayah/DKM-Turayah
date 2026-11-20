@@ -83,7 +83,7 @@ function FormBidang({ b }) {
   </>;
 }
 
-const NAMA_HAL = { beranda: 'Beranda', jadwal: 'Jadwal', pengajuan: 'Pengajuan', keropak: 'Keropak', iuran: 'Iuran', kas: 'Kas', laporan: 'Laporan', intransit: 'Intransit', maklumat: 'Maklumat', zakat: 'Zakat', qurban: 'Qurban', inventaris: 'Inventaris', kelola: 'Kelola' };
+const NAMA_HAL = { beranda: 'Beranda', jadwal: 'Jadwal', pengajuan: 'Pengajuan', keropak: 'Keropak', iuran: 'Iuran', kas: 'Kas', laporan: 'Laporan', intransit: 'Intransit', ambulans: 'Ambulans', maklumat: 'Maklumat', zakat: 'Zakat', qurban: 'Qurban', inventaris: 'Inventaris', kelola: 'Kelola' };
 const ONLINE_MS = 150000; // dianggap online kalau ping terakhir < 2,5 menit lalu (ping tiap 1 menit saat layar terbuka)
 
 function lalu(t) {
@@ -126,7 +126,7 @@ function Aktivitas() {
 /* ====== Backup semua data (khusus admin) ====== */
 const NAMA_SHEET = {
   profiles: 'Pengurus (Akun)', struktur_dkm: 'Struktur DKM', bidang: 'Bidang', pos_dana: 'Pos Dana', kas: 'Kas',
-  pengajuan: 'Pengajuan Anggaran', pengajuan_item: 'Rincian Pengajuan', intransit: 'Intransit',
+  pengajuan: 'Pengajuan Anggaran', pengajuan_item: 'Rincian Pengajuan', intransit: 'Intransit', ambulans_trip: 'Ambulans - Pemakaian', ambulans_tahap: 'Ambulans - Tahap',
   keropak_jumat: 'Keropak Jumat', iuran: 'Iuran Warga', warga: 'Data Warga', maklumat: 'Maklumat Jumat',
   zakat_tahun: 'Zakat - Setting Tahun', zakat_terima: 'Zakat - Penerimaan', zakat_salur: 'Zakat - Penyaluran',
   qurban_setting: 'Qurban - Setting', qurban_peserta: 'Qurban - Peserta', qurban_bayar: 'Qurban - Pembayaran',

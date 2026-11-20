@@ -65,6 +65,7 @@ export const IK = {
   iuran: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="3"/><path d="M3 20c0-3 3-5 6-5s6 2 6 5M16 4a3 3 0 0 1 0 6M18 15c2 .5 3 2 3 5"/></svg>',
   kas: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 5h14a2 2 0 0 1 2 2v12H6a2 2 0 0 1-2-2z"/><path d="M4 7a2 2 0 0 0 2 2h14M16 14h.01"/></svg>',
   intransit: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 8h13l-3-3M20 16H7l3 3"/></svg>',
+  ambulans: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 16V8h11v8M13 11h4l3 3v2h-2"/><circle cx="7" cy="17" r="2"/><circle cx="16" cy="17" r="2"/><path d="M7.5 10v3M6 11.5h3"/></svg>',
   maklumat: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 10v4h3l6 4V6L6 10z"/><path d="M16 9a4 4 0 0 1 0 6M19 6a8 8 0 0 1 0 12"/></svg>',
   zakat: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 10h12l-1.5 10h-9z"/><path d="M9 10V7a3 3 0 0 1 6 0v3M12 14v3"/></svg>',
   qurban: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 9c-1.5-1-2-3-1-4 1 1 2 1 3 1M19 9c1.5-1 2-3 1-4-1 1-2 1-3 1"/><path d="M7 6h10l1 6-2 3v5h-3v-3h-2v3H8v-5l-2-3z"/></svg>',

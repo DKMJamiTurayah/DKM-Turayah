@@ -7,7 +7,7 @@ import { FormKeropak } from './Keropak';
 import { KartuJadwal } from './Jadwal';
 import Struktur from './Struktur';
 
-const labelModul = m => ({ pengajuan: 'pengajuan', keropak: 'keropak Jumat', iuran: 'iuran warga', kas: 'kas', user: 'pengurus', maklumat: 'maklumat Jumat', intransit: 'intransit kembalian', zakat: 'zakat', takjil: 'takjil', qurban: 'qurban', inventaris: 'inventaris' }[m] || m);
+const labelModul = m => ({ pengajuan: 'pengajuan', keropak: 'keropak Jumat', iuran: 'iuran warga', kas: 'kas', user: 'pengurus', maklumat: 'maklumat Jumat', intransit: 'intransit kembalian', ambulans: 'ambulans', zakat: 'zakat', takjil: 'takjil', qurban: 'qurban', inventaris: 'inventaris' }[m] || m);
 
 export default function Beranda() {
   const a = useApp();

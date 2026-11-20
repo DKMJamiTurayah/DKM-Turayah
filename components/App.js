@@ -10,6 +10,7 @@ import Keropak from './Keropak';
 import Iuran from './Iuran';
 import Kas from './Kas';
 import Intransit from './Intransit';
+import Ambulans from './Ambulans';
 import Kelola from './Kelola';
 import Maklumat from './Maklumat';
 import Akun from './Akun';
@@ -20,7 +21,7 @@ import Inventaris from './Inventaris';
 import InfoBerjalan from './InfoBerjalan';
 import Laporan, { IK_LAPORAN } from './Laporan';
 
-const HALAMAN = { beranda: Beranda, jadwal: Jadwal, pengajuan: Pengajuan, keropak: Keropak, iuran: Iuran, kas: Kas, laporan: Laporan, intransit: Intransit, maklumat: Maklumat, zakat: Zakat, qurban: Qurban, inventaris: Inventaris, kelola: Kelola };
+const HALAMAN = { beranda: Beranda, jadwal: Jadwal, pengajuan: Pengajuan, keropak: Keropak, iuran: Iuran, kas: Kas, laporan: Laporan, intransit: Intransit, ambulans: Ambulans, maklumat: Maklumat, zakat: Zakat, qurban: Qurban, inventaris: Inventaris, kelola: Kelola };
 
 // daftar tugas yang menunggu tindakan user ini (dipakai di beranda & badge menu)
 // auto logout: keluar sendiri kalau tidak ada aktivitas selama 15 menit
@@ -39,6 +40,8 @@ export async function tugasSaya(me) {
   if (punya('ketum')) {
     const n = await hit('pengajuan', x => x.eq('status', 'diajukan'));
     if (n) t.push({ n, teks: 'Pengajuan anggaran menunggu approval Anda', ke: 'pengajuan', sub: 'diajukan' });
+    const amb = await hit('ambulans_tahap', x => x.eq('status', 'diajukan'));
+    if (amb) t.push({ n: amb, teks: 'Pengajuan Ambulans menunggu approval Anda', ke: 'ambulans' });
   }
   if (punya('bendahara')) {
     const a = await hit('pengajuan', x => x.eq('status', 'disetujui'));
@@ -167,7 +170,7 @@ export default function App() {
     return () => { hidup = false; sesiRef.current = null; clearInterval(iv); };
   }, [status, me?.id, kirimPing]);
   useEffect(() => { halRef.current = hal; kirimPing(); }, [hal, kirimPing]);
-  const menu = [['beranda', 'Beranda'], ['jadwal', 'Jadwal'], ['pengajuan', 'Pengajuan'], ['keropak', 'Keropak'], ['iuran', 'Iuran'], ['kas', 'Kas'], ['laporan', 'Laporan'], ['intransit', 'Intransit'], ['maklumat', 'Maklumat'], ['zakat', 'Zakat'], ['qurban', 'Qurban'], ['inventaris', 'Inventaris']];
+  const menu = [['beranda', 'Beranda'], ['jadwal', 'Jadwal'], ['pengajuan', 'Pengajuan'], ['keropak', 'Keropak'], ['iuran', 'Iuran'], ['kas', 'Kas'], ['laporan', 'Laporan'], ['intransit', 'Intransit'], ['ambulans', 'Ambulans'], ['maklumat', 'Maklumat'], ['zakat', 'Zakat'], ['qurban', 'Qurban'], ['inventaris', 'Inventaris']];
   if (punya('admin', 'ketum')) menu.push(['kelola', 'Kelola']);
 
   const ctx = {
