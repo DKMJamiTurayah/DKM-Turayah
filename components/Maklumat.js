@@ -8,7 +8,7 @@ import '@fontsource/plus-jakarta-sans/700.css';
 import '@fontsource/plus-jakarta-sans/800.css';
 import { sb, rpc, q } from '@/lib/supabase';
 import { BULAN_P, jam, jumatDepan, pesanError, rp, tglPanjang } from '@/lib/util';
-import { bulanHijriyah, HARI_PENDEK, BULAN_M, tglHijriyah } from '@/lib/hijriyah';
+import { tglHijriyah } from '@/lib/hijriyah';
 import { Btn, Field, Loading, useApp, useLoad } from './ui';
 
 // isian awal kalau belum pernah ada maklumat sama sekali
@@ -171,8 +171,8 @@ function Editor({ awal, riwayat, tutup }) {
     </div>
 
     <div className="kartu">
-      <b>Kalender Hijriyah</b>
-      <div className="kecil">Tampil otomatis di bawah kegiatan. Jumat ini: <b>{f.tanggal ? tglHijriyah(f.tanggal, koreksiH) : '-'}</b></div>
+      <b>Tanggal Hijriyah</b>
+      <div className="kecil">Tampil otomatis di bawah tanggal Masehi pada poster. Jumat ini: <b>{f.tanggal ? tglHijriyah(f.tanggal, koreksiH) : '-'}</b></div>
       <label className="f" htmlFor="mKoreksi">Koreksi tanggal Hijriyah (kalau beda dengan Kemenag/NU)</label>
       <select className="f" id="mKoreksi" value={koreksiH} onChange={e => ubahKoreksi(+e.target.value)}>
         <option value={-2}>Mundur 2 hari</option><option value={-1}>Mundur 1 hari</option><option value={0}>Tanpa koreksi</option>
@@ -243,7 +243,7 @@ export function Poster({ d, lap, ref }) {
 
     <div className="mk-isi">
       <div className="mk-waktu">
-        <div><span>Tanggal</span><b>{tglPanjang(d.tanggal)}</b></div>
+        <div><span>Tanggal</span><b>{tglPanjang(d.tanggal)}</b><em style={{ display: 'block', fontStyle: 'normal', fontSize: 24, fontWeight: 600, color: '#5f6680', marginTop: 6 }}>{tglHijriyah(d.tanggal, d.koreksiH || 0)}</em></div>
         <div><span>Waktu</span><b>{d.waktu || '-'}</b></div>
       </div>
 
@@ -271,7 +271,6 @@ export function Poster({ d, lap, ref }) {
         </div>)}
       </>}
 
-      <KalenderHijriyah tanggal={d.tanggal} koreksi={d.koreksiH || 0} />
     </div>
 
     <div className="mk-bawah">
@@ -281,34 +280,6 @@ export function Poster({ d, lap, ref }) {
   </div>;
         }
     
-
-// kalender satu bulan Hijriyah (angka besar = tanggal Hijriyah, angka kecil = Masehi)
-function KalenderHijriyah({ tanggal, koreksi }) {
-  if (!tanggal) return null;
-  const b = bulanHijriyah(tanggal, koreksi);
-  const sel = [...Array(b.mulai).fill(null), ...b.hari];
-  while (sel.length % 7) sel.push(null);
-  const minggu = []; for (let i = 0; i < sel.length; i += 7) minggu.push(sel.slice(i, i + 7));
-  return <div style={{ marginTop: 34 }}>
-    <div className="mk-h">Kalender Hijriyah</div>
-    <div style={{ background: '#fcf8ef', border: '2px solid #ead9b3', borderRadius: 20, padding: '22px 20px 14px' }}>
-      <div style={{ textAlign: 'center', fontSize: 34, fontWeight: 800, color: '#1c2452', marginBottom: 14 }}>{b.nama} {b.tahun} H</div>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 6 }}>
-        {HARI_PENDEK.map((h, i) => <div key={h} style={{ textAlign: 'center', fontSize: 20, fontWeight: 700, padding: '6px 0', color: i === 5 ? '#b9801a' : '#5f6680' }}>{h}</div>)}
-        {minggu.flat().map((c, i) => {
-          if (!c) return <div key={i} />;
-          const ini = c.g === tanggal, dt = new Date(c.g + 'T00:00:00Z');
-          const m = dt.getUTCDate();
-          return <div key={i} style={{ textAlign: 'center', borderRadius: 14, padding: '8px 0 6px', background: ini ? '#1c2452' : 'transparent', color: ini ? '#fff' : '#1c2452' }}>
-            <div style={{ fontSize: 30, fontWeight: 800, lineHeight: 1.1, color: ini ? '#f2bb48' : (i % 7 === 5 ? '#b9801a' : '#1c2452') }}>{c.h}</div>
-            <div style={{ fontSize: 16, fontWeight: 600, color: ini ? '#e8e6f2' : '#7a8099' }}>{m === 1 || c.h === 1 ? m + ' ' + BULAN_M[dt.getUTCMonth()] : m}</div>
-          </div>;
-        })}
-      </div>
-      <div style={{ textAlign: 'center', fontSize: 17, color: '#7a8099', marginTop: 12 }}>Angka besar: tanggal Hijriyah · angka kecil: tanggal Masehi</div>
-    </div>
-  </div>;
-}
 
 /* ====== Jadwal Khatib per bulan (rekap + rencana ke depan) ====== */
 const bulanJumat = bln => {
