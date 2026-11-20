@@ -101,7 +101,7 @@ export default function Jadwal() {
             <span>{NAMA[k]}{k === 'maghrib' && rm.ini ? ' · buka puasa' : ''}</span><b>{j[k]}</b></div>;
         })}
       </div>
-      <p className="kecil">Lokasi {LOKASI.nama}. Dihitung dengan metode Kemenag RI (Subuh 20°, Isya 18°, ihtiyat ±2 menit), selisih dengan jadwal resmi Kemenag Kab. Bekasi maksimal 1 menit.</p>
+      <p className="kecil">Lokasi {LOKASI.nama}. Dihitung dengan metode Kemenag RI (Subuh 20°, Isya 18°), disesuaikan dengan NU Online. Maghrib dan Isya memakai ihtiyat 2 menit.</p>
     </> : tab === 'takjil' ? <TakjilPengurus /> : tab === 'tarawih' ? (rm.r.hari.length ? <Tarawih rm={rm} /> : <div className="kartu kosong">Jadwal Ramadhan belum tersedia.</div>) : <>
       {rm.r.hari.length ? <>
         <div className="kartu">
@@ -143,8 +143,7 @@ function PosterImsakiyah({ rm, ref }) {
           <td className="ke">{h.ke}</td><td className="l">{hariPendek(h.tanggal)}, {tglPendek(h.tanggal)} {h.tanggal.slice(0, 4)}</td>
           <td>{h.imsak}</td><td>{h.subuh}</td><td>{h.dzuhur}</td><td>{h.ashar}</td><td className="bk">{h.maghrib}</td><td>{h.isya}</td></tr>)}</tbody>
       </table>
-      <div className="jd-catatan">Metode perhitungan Kemenag RI · ihtiyat 2 menit · 1 Ramadhan mengikuti keputusan sidang isbat pemerintah</div>
+      <div className="jd-catatan">Metode perhitungan Kemenag RI · disesuaikan NU Online (Maghrib & Isya ihtiyat 2 menit) · 1 Ramadhan mengikuti keputusan sidang isbat pemerintah</div>
     </div>
   </div>;
 }
-
