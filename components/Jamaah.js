@@ -21,7 +21,11 @@ const CSS = `.jm-head{background:var(--hijau);color:#fff;padding:18px 16px;displ
 .jm-shalat{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-top:10px;text-align:center}
 .jm-shalat div{background:var(--hijau-muda);border-radius:10px;padding:7px 2px;font-size:12px;color:var(--hijau)}
 .jm-shalat div b{display:block;font-size:15px;color:#1b2b26}.jm-shalat div.on{background:var(--hijau);color:#fff}.jm-shalat div.on b{color:#fff}
-.jm-pos{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--garis);font-size:14px}.jm-pos:last-child{border:0}`;
+.jm-pos{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--garis);font-size:14px}.jm-pos:last-child{border:0}
+.jm-req{display:flex;gap:14px;align-items:flex-start}.jm-req-ic{flex:none;width:48px;height:48px;border-radius:14px;background:var(--hijau-muda);display:flex;align-items:center;justify-content:center;color:var(--hijau)}
+.jm-req b{font-size:17px;display:block}.jm-req-wa{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:14px;padding:13px 14px;border-radius:14px;background:var(--hijau);color:#fff;font-weight:700;text-decoration:none;box-shadow:0 4px 10px rgba(0,0,0,.12)}`;
+const WA_ADMIN = '6282113609810'; // +62 821-1360-9810
+const PESAN_ADMIN = 'Assalamualaikum Admin ' + NAMA_DKM + ', saya ingin mengajukan request:\n\n';
 
 export default function Jamaah() {
   const [toastS, setToastS] = useState(null);
@@ -77,6 +81,16 @@ function Isi() {
       </div> : null}
 
       {!s.data ? <div style={{ marginTop: 12 }}><Loading s={s} /></div> : <Data d={s.data} tahun={tahun} malamIni={malamIni} bulan={bulan} />}
+      <div className="kartu" style={{ marginTop: 16 }}>
+        <div className="jm-req">
+          <div className="jm-req-ic"><svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M4 4h11a3 3 0 0 1 3 3v6a3 3 0 0 1-3 3H9l-4 3v-3H4a3 3 0 0 1-3-3V7a3 3 0 0 1 3-3z" opacity=".85"/><path d="M20 9a3 3 0 0 1 3 3v6a3 3 0 0 1-3 3v2l-3.5-2H11a3 3 0 0 1-2.6-1.5H15a4 4 0 0 0 4-4V9z"/></svg></div>
+          <div><b>Request to Admin</b><div className="kecil">Punya masukan atau permintaan untuk pengelolaan kas atau kegiatan masjid? Sampaikan langsung ke Admin melalui WhatsApp.</div></div>
+        </div>
+        <a className="jm-req-wa" href={'https://wa.me/' + WA_ADMIN + '?text=' + encodeURIComponent(PESAN_ADMIN)} target="_blank" rel="noreferrer">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12.04 2a9.9 9.9 0 0 0-8.5 14.9L2 22l5.25-1.5A9.9 9.9 0 1 0 12.04 2zm0 18.1a8.2 8.2 0 0 1-4.2-1.15l-.3-.18-3.1.89.9-3.02-.2-.31a8.2 8.2 0 1 1 6.9 3.77zm4.5-6.15c-.25-.12-1.46-.72-1.69-.8-.22-.08-.39-.12-.55.12-.16.25-.63.8-.78.96-.14.17-.29.18-.53.06a6.7 6.7 0 0 1-3.3-2.88c-.25-.43.25-.4.72-1.33.08-.16.04-.3-.02-.42-.06-.12-.55-1.33-.76-1.82-.2-.48-.4-.41-.55-.42h-.47c-.16 0-.43.06-.65.3-.22.25-.86.84-.86 2.05s.88 2.38 1 2.55c.12.16 1.73 2.64 4.2 3.7 1.55.67 2.16.73 2.94.61.47-.07 1.46-.6 1.66-1.17.2-.58.2-1.07.14-1.18-.06-.1-.22-.16-.47-.28z"/></svg>
+          Request to Admin
+        </a>
+      </div>
       <p className="kecil" style={{ textAlign: 'center', marginTop: 20 }}>Jadwal shalat metode Kemenag RI · Data keuangan dari sistem {NAMA_DKM}</p>
     </div>
   </>;
