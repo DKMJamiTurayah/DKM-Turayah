@@ -40,6 +40,8 @@ export async function tugasSaya(me) {
   if (punya('ketum')) {
     const n = await hit('pengajuan', x => x.eq('status', 'diajukan'));
     if (n) t.push({ n, teks: 'Pengajuan anggaran menunggu approval Anda', ke: 'pengajuan', sub: 'diajukan' });
+  }
+  if (punya('ketum', 'admin')) {
     const amb = await hit('ambulans_tahap', x => x.eq('status', 'diajukan'));
     if (amb) t.push({ n: amb, teks: 'Pengajuan Ambulans menunggu approval Anda', ke: 'ambulans' });
   }
