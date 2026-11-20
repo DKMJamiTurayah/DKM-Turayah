@@ -232,6 +232,7 @@ const strip = n => +n ? rp(n) : '-';
 
 export function Poster({ d, lap, ref }) {
   const total = lap.reduce((x, r) => x + +r.total, 0);
+  const jml = k => lap.reduce((x, r) => x + +r[k], 0);
   const judul = (d.nama_masjid || '').trim();
   return <div ref={ref} className="mk">
     <div className="mk-atas" style={{ position: 'relative' }}>
@@ -255,13 +256,20 @@ export function Poster({ d, lap, ref }) {
 
       <div className="mk-h">Laporan keuangan</div>
       <table className="mk-tabel">
-        <thead><tr><th>Rincian</th><th>Saldo lalu</th><th className="c">Masuk</th><th className="c">Keluar</th><th>Total</th></tr></thead>
+        <thead><tr><th>Rincian</th><th>Saldo lalu</th><th className="c">Masuk</th><th className="c">Keluar</th><th>Saldo Akhir</th></tr></thead>
         <tbody>{lap.map(r => <tr key={r.pos_id}>
           <td>{r.nama}</td><td>{rp(r.saldo_lalu)}</td>
           <td className={+r.masuk ? '' : 'c'}>{strip(r.masuk)}</td><td className={+r.keluar ? '' : 'c'}>{strip(r.keluar)}</td>
           <td className="tb">{rp(r.total)}</td></tr>)}</tbody>
+        <tfoot><tr>
+          <td style={{ borderTop: '3px solid #1c2452', borderBottom: 'none', fontWeight: 800 }}>Total</td>
+          <td style={{ borderTop: '3px solid #1c2452', borderBottom: 'none', fontWeight: 800 }}>{rp(jml('saldo_lalu'))}</td>
+          <td className={jml('masuk') ? '' : 'c'} style={{ borderTop: '3px solid #1c2452', borderBottom: 'none', fontWeight: 800 }}>{strip(jml('masuk'))}</td>
+          <td className={jml('keluar') ? '' : 'c'} style={{ borderTop: '3px solid #1c2452', borderBottom: 'none', fontWeight: 800 }}>{strip(jml('keluar'))}</td>
+          <td style={{ borderTop: '3px solid #1c2452', borderBottom: 'none', fontWeight: 800 }}>{rp(total)}</td>
+        </tr></tfoot>
       </table>
-      <div className="mk-total"><span>Total saldo saat ini</span><b>{rp(total)}</b></div>
+      <div className="mk-total"><span>Total Saldo Jumat ini Tgl {tglPanjang(d.tanggal).replace(/^[^,]+, /, '')}</span><b>{rp(total)}</b></div>
 
       {d.kegiatan.length > 0 && <>
         <div className="mk-h">Kegiatan {judul}</div>
