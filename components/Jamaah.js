@@ -1,10 +1,9 @@
 'use client';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { toPng } from 'html-to-image';
 import { rpc } from '@/lib/supabase';
 import { BULAN_P, NAMA_DKM, hariIni, pesanError, rp, tglPanjang } from '@/lib/util';
 import { hitungJadwal, tambahHari, LOKASI, WAJIB } from '@/lib/jadwal';
-import { AppCtx, Btn, Loading, LogoMasjid, useApp } from './ui';
+import { AppCtx, Loading, LogoMasjid } from './ui';
 import { Poster, Skala } from './Maklumat';
 import { hariTakjil } from './Takjil';
 import InfoBerjalan from './InfoBerjalan';
@@ -15,7 +14,8 @@ const kg = n => (+n || 0).toLocaleString('id-ID', { maximumFractionDigits: 2 }) 
 const sisa = m => { m = Math.max(0, Math.ceil(m)); const j = Math.floor(m / 60); return (j ? j + ' jam ' : '') + (m % 60) + ' menit'; };
 const selisih = (a, b) => Math.round((new Date(b + 'T00:00:00Z') - new Date(a + 'T00:00:00Z')) / 864e5);
 
-const CSS = `.jm-head{background:var(--hijau);color:#fff;padding:18px 16px;display:flex;gap:12px;align-items:center}
+const CSS = `.jm-lindung{position:relative;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}.jm-lindung img{-webkit-user-drag:none;pointer-events:none}.jm-lindung::after{content:'';position:absolute;inset:0;pointer-events:none;border-radius:12px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='320' height='200'%3E%3Ctext x='20' y='120' transform='rotate(-25 160 100)' font-family='sans-serif' font-size='17' font-weight='700' fill='%231c2452' fill-opacity='.13'%3EKhusus warga Villa Athaland 2%3C/text%3E%3C/svg%3E")}@media print{.jm-lindung{display:none}}
+.jm-head{background:var(--hijau);color:#fff;padding:18px 16px;display:flex;gap:12px;align-items:center}
 .jm-head b{font-size:18px;display:block}.jm-head span{font-size:13px;opacity:.9}
 .jm-wrap{max-width:640px;margin:0 auto;padding:12px 12px 40px}
 .jm-shalat{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-top:10px;text-align:center}
@@ -97,25 +97,8 @@ function Isi() {
 }
 
 function Data({ d, tahun, malamIni, bulan }) {
-  const a = useApp();
-  const poster = useRef();
   const total = d.saldo.reduce((x, p) => x + +p.saldo, 0);
   const z = d.zakat, tw = malamIni && d.tarawih.find(t => t.malam === malamIni.ke);
-
-  const gambar = async () => {
-    await document.fonts?.ready;
-    const opsi = { pixelRatio: 1, cacheBust: true, backgroundColor: '#f6eedf' };
-    await toPng(poster.current, opsi);
-    return { url: await toPng(poster.current, opsi), nama: `maklumat-jumat-${d.maklumat.tanggal}.png` };
-  };
-  const unduh = async () => { const { url, nama } = await gambar(); const el = document.createElement('a'); el.href = url; el.download = nama; el.click(); a.toast('Gambar diunduh'); };
-  const bagikan = async () => {
-    const { url, nama } = await gambar();
-    const file = new File([await (await fetch(url)).blob()], nama, { type: 'image/png' });
-    if (navigator.canShare?.({ files: [file] })) {
-      try { await navigator.share({ files: [file], title: 'Maklumat Jumat' }); } catch (e) { if (e.name !== 'AbortError') throw e; }
-    } else { const el = document.createElement('a'); el.href = url; el.download = nama; el.click(); }
-  };
 
   return <>
     {tw && <div className="kartu" style={{ marginTop: 12 }}>
@@ -144,11 +127,9 @@ function Data({ d, tahun, malamIni, bulan }) {
 
     <h3>Maklumat Jumat Terbaru</h3>
     {d.maklumat ? <>
-      <div className="aksi" style={{ marginTop: 0, marginBottom: 10 }}>
-        <Btn onClick={unduh}>Unduh Gambar</Btn>
-        <Btn className="btn emas" onClick={bagikan}>Bagikan ke WA</Btn>
+      <div className="jm-lindung" onContextMenu={e => e.preventDefault()} onDragStart={e => e.preventDefault()}>
+        <Skala><Poster d={{ ...d.maklumat, kegiatan: d.maklumat.kegiatan || [] }} lap={d.laporan} /></Skala>
       </div>
-      <Skala><Poster ref={poster} d={{ ...d.maklumat, kegiatan: d.maklumat.kegiatan || [] }} lap={d.laporan} /></Skala>
     </> : <div className="kartu kosong">Belum ada maklumat.</div>}
   </>;
 }

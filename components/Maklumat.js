@@ -54,7 +54,7 @@ export default function Maklumat() {
     <div className="baris-flex"><h2 className="spasi">Maklumat Jumat</h2>
       <button className="btn sek kecil" onClick={() => setJadwal(true)}>Jadwal Khatib</button>
       {bolehBuat(a) && <button className="btn kecil" onClick={baru}>+ Maklumat {tglPanjang(jumatDepan()).replace('Jumat, ', '')}</button>}</div>
-    <p className="kecil">Laporan keuangan terisi otomatis dari Buku Kas per pos dana. Isian lain otomatis disalin dari maklumat minggu lalu, tinggal ganti petugasnya.{!bolehBuat(a) && ' Yang bisa membuat maklumat hanya pengurus yang ditunjuk Admin / Ketum, Anda bisa melihat & mengunduh.'}</p>
+    <p className="kecil">Laporan keuangan terisi otomatis dari Buku Kas per pos dana. Isian lain otomatis disalin dari maklumat minggu lalu, tinggal ganti petugasnya.{!bolehBuat(a) && ' Yang bisa membuat maklumat hanya pengurus yang ditunjuk Admin / Ketum, Anda bisa melihat maklumat.'}</p>
     {s.data.length ? s.data.map(m => (
       <div className="kartu klik" key={m.id} onClick={() => setBuka(m)}>
         <div className="baris-flex"><b className="spasi">{tglPanjang(m.tanggal)}</b><span className="kecil">{m.waktu}</span></div>
@@ -196,8 +196,8 @@ function Editor({ awal, riwayat, tutup }) {
     </>}
     <div className="aksi" style={{ marginTop: boleh ? 0 : 10, marginBottom: 10 }}>
       {boleh && <Btn className="btn sek" onClick={() => simpan()}>Simpan</Btn>}
-      <Btn onClick={unduh} disabled={!lap.data}>Unduh Gambar</Btn>
-      <Btn className="btn emas" onClick={bagikan} disabled={!lap.data}>Bagikan ke WA</Btn>
+      {a.punya('admin') && <Btn onClick={unduh} disabled={!lap.data}>Unduh Gambar</Btn>}
+      {a.punya('admin') && <Btn className="btn emas" onClick={bagikan} disabled={!lap.data}>Bagikan ke WA</Btn>}
     </div>
 
     <h3>Pratinjau</h3>
