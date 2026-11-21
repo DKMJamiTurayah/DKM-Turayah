@@ -1,4 +1,5 @@
 'use client';
+import { useState } from 'react';
 import { sb, rpc, q } from '@/lib/supabase';
 import { BULAN_P, bulanIni, jam, rp } from '@/lib/util';
 import { Loading, useApp, useLoad } from './ui';
@@ -6,12 +7,14 @@ import { bukaFormPengajuan } from './Pengajuan';
 import { FormKeropak } from './Keropak';
 import { KartuJadwal } from './Jadwal';
 import Struktur from './Struktur';
+import GridMenu, { Ikon } from './MenuGrid';
 
 const WA_ADMIN = '6282113609810'; // +62 821-1360-9810
 const labelModul = m => ({ pengajuan: 'pengajuan', keropak: 'keropak Jumat', iuran: 'iuran warga', kas: 'kas', user: 'pengurus', maklumat: 'maklumat Jumat', intransit: 'intransit kembalian', ambulans: 'ambulans', zakat: 'zakat', takjil: 'takjil', qurban: 'qurban', inventaris: 'inventaris' }[m] || m);
 
 export default function Beranda() {
   const a = useApp();
+  const [sembunyi, setSembunyi] = useState(false);
   const s = useLoad(async () => {
     const [saldo, kasBln, tugas, log] = await Promise.all([
       rpc('saldo_kas'),
@@ -30,23 +33,22 @@ export default function Beranda() {
   return <>
     <div className="kartu saldo">
       <svg className="hiasan" width="150" height="150" viewBox="0 0 64 64"><path d="M32 8c-9 7-15 12-15 21h30c0-9-6-14-15-21z" fill="#fff" /><rect x="15" y="29" width="34" height="23" fill="#fff" /></svg>
-      <div className="lbl">Saldo Kas DKM</div><div className="angka">{rp(saldo)}</div>
-      <div className="baris"><div>Masuk {bln}<b>{rp(masuk)}</b></div><div>Keluar {bln}<b>{rp(keluar)}</b></div></div>
+      <div className="lbl">Saldo Kas DKM <button className="mata" aria-label="Sembunyikan saldo" onClick={() => setSembunyi(x => !x)}>{sembunyi ? '🙈' : '👁️'}</button></div><div className="angka">{sembunyi ? 'Rp ••••••••' : rp(saldo)}</div>
+      <div className="baris"><div>Masuk {bln}<b>{sembunyi ? 'Rp ••••••' : rp(masuk)}</b></div><div>Keluar {bln}<b>{sembunyi ? 'Rp ••••••' : rp(keluar)}</b></div></div>
+      <div className="cepat">
+        <button onClick={() => a.openModal('Setor Keropak Jumat', <FormKeropak />)}><Ikon k="keropak" />Setor Keropak</button>
+        {a.punya('petugas', 'bendahara', 'ketum', 'admin', 'sekretaris') && <button onClick={() => a.go('iuran', 'catat')}><Ikon k="iuran" />Catat Iuran</button>}
+      </div>
     </div>
     <KartuJadwal />
     <h3>Tugas Saya</h3>
     {tugas.length ? tugas.map((t, i) => (
       <div key={i} className="tugas" onClick={() => a.go(t.ke, t.sub)}><div className="n">{t.n}</div><div>{t.teks}</div></div>
     )) : <div className="kartu kosong">Alhamdulillah, tidak ada tugas yang menunggu.</div>}
-    <div className="aksi" style={{ marginTop: 4 }}>
-      {a.punya('ketua_bidang') && <button className="btn" onClick={() => bukaFormPengajuan(a)}>+ Ajukan Anggaran</button>}
-      <button className="btn sek" onClick={() => a.openModal('Setor Keropak Jumat', <FormKeropak />)}>Setor Keropak Jumat</button>
-      <button className="btn sek" onClick={() => a.go('maklumat')}>Maklumat Jumat</button>
-      <button className="btn sek" onClick={() => a.go('zakat', 'terima')}>Zakat Fitrah &amp; Fidyah</button>
-      <a className="btn sek" href={'https://wa.me/?text=' + encodeURIComponent('Info jadwal shalat, maklumat Jumat & laporan keuangan masjid bisa dilihat di sini (tanpa login):\n' + window.location.origin + '/jamaah')} target="_blank" rel="noreferrer">Sebar Link Halaman Jamaah</a>
-      {a.punya('petugas', 'bendahara', 'ketum', 'admin', 'sekretaris') &&
-        <button className="btn sek" onClick={() => a.go('iuran', 'catat')}>Catat Iuran Warga</button>}
-    </div>
+    <h3>Menu</h3>
+    <div className="kartu"><GridMenu /></div>
+    {a.punya('ketua_bidang') && <div className="aksi" style={{ marginTop: 4 }}><button className="btn" onClick={() => bukaFormPengajuan(a)}>+ Ajukan Anggaran</button></div>}
+      <a className="banner" href={'https://wa.me/?text=' + encodeURIComponent('Info jadwal shalat, maklumat Jumat & laporan keuangan masjid bisa dilihat di sini (tanpa login):\n' + window.location.origin + '/jamaah')} target="_blank" rel="noreferrer">Sebar Link Halaman Jamaah</a>
     <Struktur />
     <h3>Aktivitas Terakhir</h3>
     <div className="kartu">{log.length ? <div className="timeline">{log.map(l => (

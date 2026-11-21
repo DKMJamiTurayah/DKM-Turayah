@@ -19,6 +19,7 @@ import Zakat from './Zakat';
 import Qurban from './Qurban';
 import Inventaris from './Inventaris';
 import InfoBerjalan from './InfoBerjalan';
+import { SemuaMenu } from './MenuGrid';
 import Laporan, { IK_LAPORAN } from './Laporan';
 
 const HALAMAN = { beranda: Beranda, jadwal: Jadwal, pengajuan: Pengajuan, keropak: Keropak, iuran: Iuran, kas: Kas, laporan: Laporan, intransit: Intransit, ambulans: Ambulans, maklumat: Maklumat, zakat: Zakat, qurban: Qurban, inventaris: Inventaris, kelola: Kelola };
@@ -176,11 +177,12 @@ export default function App() {
     return () => { hidup = false; sesiRef.current = null; clearInterval(iv); };
   }, [status, me?.id, kirimPing]);
   useEffect(() => { halRef.current = hal; kirimPing(); }, [hal, kirimPing]);
+  const UTAMA = ['beranda', 'kas', 'iuran', 'laporan'];
   const menu = [['beranda', 'Beranda'], ['jadwal', 'Jadwal'], ['pengajuan', 'Pengajuan'], ['keropak', 'Keropak'], ['iuran', 'Iuran'], ['kas', 'Kas'], ['laporan', 'Laporan'], ['intransit', 'Intransit'], ['ambulans', 'Ambulans'], ['maklumat', 'Maklumat'], ['zakat', 'Zakat'], ['qurban', 'Qurban'], ['inventaris', 'Inventaris']];
   if (punya('admin', 'ketum')) menu.push(['kelola', 'Kelola']);
 
   const ctx = {
-    me, prof, bid, punya, toast, refreshKey, sub, muatSaya, muatBidang, keluar, tugasSaya,
+    me, prof, bid, punya, toast, menu, badge, refreshKey, sub, muatSaya, muatBidang, keluar, tugasSaya,
     setProf,
     nm: id => id ? (prof[id]?.nama || '—') : '—',
     bn: id => bid[id]?.nama || '—',
@@ -216,11 +218,15 @@ export default function App() {
       <InfoBerjalan muatUlang={refreshKey} />
       <main id="hal"><Hal key={h} /></main>
       <nav className="bawah"><div className="in">
-        {menu.map(([k, l]) => (
+        {menu.filter(([k]) => UTAMA.includes(k)).map(([k, l]) => (
           <button key={k} id={'nav-' + k} className={h === k ? 'on' : ''} onClick={() => ctx.go(k)}>
             <span dangerouslySetInnerHTML={{ __html: k === 'laporan' ? IK_LAPORAN : IK[k] }} style={{ display: 'contents' }} />
             <span>{l}</span>{badge[k] ? <span className="dot">{badge[k]}</span> : null}
           </button>))}
+        <button id="nav-menu" className={!UTAMA.includes(h) ? 'on' : ''} onClick={() => ctx.openModal('Semua Menu', <SemuaMenu />)}>
+          <svg viewBox="0 0 24 24" fill="currentColor"><circle cx="6" cy="12" r="1.8" /><circle cx="12" cy="12" r="1.8" /><circle cx="18" cy="12" r="1.8" /></svg>
+          <span>Menu</span>{menu.filter(([k]) => !UTAMA.includes(k)).reduce((n, [k]) => n + (badge[k] || 0), 0) ? <span className="dot">!</span> : null}
+        </button>
       </div></nav>
     </>;
   }
