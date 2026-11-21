@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { sb, rpc, q } from '@/lib/supabase';
 import { BULAN_P, NAMA_DKM, bulanIni, cetak, esc, hariIni, rp, tgl, unduhCSV } from '@/lib/util';
 import { Btn, Chips, Field, InputRp, Loading, useApp, useLoad } from './ui';
+import AksesPos from './AksesPos';
 
 export const muatPos = () => q(sb().from('pos_dana').select('*').order('urutan').order('id'));
 
@@ -12,7 +13,8 @@ export default function Kas() {
   const [pos, setPos] = useState('semua');
   const [th, bl] = bln.split('-').map(Number);
   const sp = useLoad(async () => {
-    const [list, saldo, transit] = await Promise.all([muatPos(), rpc('laporan_pos', { p_tgl: hariIni() }),
+    const saldoSaya = async () => { try { return await rpc('laporan_pos_saya', { p_tgl: hariIni() }); } catch { return await rpc('laporan_pos', { p_tgl: hariIni() }); } };
+    const [list, saldo, transit] = await Promise.all([muatPos(), saldoSaya(),
       Promise.resolve(q(sb().from('intransit').select('jumlah').neq('status', 'diterima'))).catch(() => [])]);
     return { list, saldo, transit: transit.reduce((x, r) => x + +r.jumlah, 0) };
   }, [a.refreshKey]);
@@ -32,8 +34,11 @@ export default function Kas() {
   }, [bln, pos, a.refreshKey]);
 
   const geser = d => { let t = th, b = bl + d; if (b < 1) { b = 12; t--; } if (b > 12) { b = 1; t++; } setBln(t + '-' + String(b).padStart(2, '0')); };
-  const posList = sp.data?.list || [];
-  const namaPos = id => posList.find(p => p.id === id)?.nama || '—';
+  const posAll = sp.data?.list || [];
+  const idBoleh = new Set((sp.data?.saldo || []).map(r => r.pos_id));   // hanya pos yang boleh dilihat user ini
+  const posList = posAll.filter(p => idBoleh.has(p.id));
+  const penuh = a.punya('admin', 'ketum', 'bendahara');
+  const namaPos = id => posAll.find(p => p.id === id)?.nama || '—';
   const judul = BULAN_P[bl - 1] + ' ' + th + (pos === 'semua' ? '' : ' · ' + namaPos(+pos));
 
   return <>
@@ -43,11 +48,12 @@ export default function Kas() {
   {sp.data && <div className="kartu">
       <div className="baris-flex"><b className="spasi">Saldo per pos dana</b>
         {a.punya('bendahara', 'admin') && <button className="btn sek kecil" onClick={() => a.openModal('Pindah Dana Antar Pos', <FormPindah pos={posList.filter(p => p.aktif)} saldo={sp.data.saldo} />)}>Pindah</button>}
-        {a.punya('admin', 'ketum') && <button className="btn sek kecil" onClick={() => a.openModal('Atur Pos Dana', <AturPos list={posList} />)}>Atur</button>}</div>
+        {a.punya('admin', 'ketum') && <button className="btn sek kecil" onClick={() => a.openModal('Atur Pos Dana', <AturPos list={posAll} />)}>Atur</button>}
+        {a.punya('admin', 'ketum') && <button className="btn sek kecil" onClick={() => a.openModal('Akses Pos per Pengurus', <AksesPos pos={posAll.filter(p => p.aktif)} />)}>Akses</button>}</div>
       <table className="t" style={{ marginTop: 6 }}><tbody>
         {sp.data.saldo.filter(r => pos === 'semua' || String(r.pos_id) === pos).map(r => <tr key={r.pos_id}><td>{r.nama}</td><td className="r tebal">{rp(r.total)}</td></tr>)}
         {pos === 'semua' && <tr><td className="tebal">Total</td><td className="r tebal masuk">{rp(sp.data.saldo.reduce((x, r) => x + +r.total, 0))}</td></tr>}
-        {pos === 'semua' && sp.data.transit > 0 && <tr><td className="kecil">Dana intransit (belum masuk kas)</td><td className="r kecil">{rp(sp.data.transit)}</td></tr>}
+        {pos === 'semua' && penuh && sp.data.transit > 0 && <tr><td className="kecil">Dana intransit (belum masuk kas)</td><td className="r kecil">{rp(sp.data.transit)}</td></tr>}
       </tbody></table></div>}
     <Chips items={[['semua', 'Semua pos'], ...posList.map(p => [String(p.id), p.nama])]} value={pos} onChange={setPos} />
     <div className="kartu baris-flex"><button className="btn sek kecil" onClick={() => geser(-1)}>‹</button>

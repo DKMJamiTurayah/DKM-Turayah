@@ -88,6 +88,7 @@ export default function App() {
   const [modal, setModal] = useState(null);
   const [toastS, setToastS] = useState(null);
   const [badge, setBadge] = useState({});
+  const [akses, setAkses] = useState(null);   // null = belum dimuat / belum ada tabel akses (jangan menyembunyikan apa pun)
   const timer = useRef();
   const sesiRef = useRef(null);
   const halRef = useRef('beranda');
@@ -139,6 +140,15 @@ export default function App() {
   }, [status, me, refreshKey]);
 
   const punya = (...r) => !!me && r.includes(me.role);
+
+  // pos dana yang boleh dilihat user ini (Admin/Ketum/Bendahara = semua)
+  useEffect(() => {
+    if (status !== 'ok' || !me) return;
+    if (['admin', 'ketum', 'bendahara'].includes(me.role)) return setAkses({ penuh: true, nama: [] });
+    Promise.all([q(sb().from('akses_pos').select('pos_id').eq('user_id', me.id)), q(sb().from('pos_dana').select('id,nama'))])
+      .then(([a, p]) => { const ids = new Set(a.map(x => x.pos_id)); setAkses({ penuh: false, nama: p.filter(x => ids.has(x.id)).map(x => (x.nama || '').toLowerCase()) }); })
+      .catch(() => setAkses(null));
+  }, [status, me, refreshKey]);
   const keluar = async () => { if (!window.__DKM_TEST__) await sb().auth.signOut(); hapusAktif(); setModal(null); setMe(null); setStatus('login'); };
   const autoKeluar = useCallback(async () => {
     try { await sb().auth.signOut(); } catch {}
@@ -180,9 +190,11 @@ export default function App() {
   const UTAMA = ['beranda', 'kas', 'iuran', 'laporan'];
   const menu = [['beranda', 'Beranda'], ['jadwal', 'Jadwal'], ['pengajuan', 'Pengajuan'], ['keropak', 'Keropak'], ['iuran', 'Iuran'], ['kas', 'Kas'], ['laporan', 'Laporan'], ['intransit', 'Intransit'], ['ambulans', 'Ambulans'], ['maklumat', 'Maklumat'], ['zakat', 'Zakat'], ['qurban', 'Qurban'], ['inventaris', 'Inventaris']];
   if (punya('admin', 'ketum')) menu.push(['kelola', 'Kelola']);
+  // menu Ambulans hanya untuk yang punya akses pos Ambulans
+  if (akses && !akses.penuh && !akses.nama.some(n => n.includes('ambulans'))) { const i = menu.findIndex(m => m[0] === 'ambulans'); if (i >= 0) menu.splice(i, 1); }
 
   const ctx = {
-    me, prof, bid, punya, toast, menu, badge, refreshKey, sub, muatSaya, muatBidang, keluar, tugasSaya,
+    me, prof, bid, punya, akses, toast, menu, badge, refreshKey, sub, muatSaya, muatBidang, keluar, tugasSaya,
     setProf,
     nm: id => id ? (prof[id]?.nama || '—') : '—',
     bn: id => bid[id]?.nama || '—',

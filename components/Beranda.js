@@ -17,7 +17,7 @@ export default function Beranda() {
   const [sembunyi, setSembunyi] = useState(false);
   const s = useLoad(async () => {
     const [saldo, kasBln, tugas, log] = await Promise.all([
-      rpc('saldo_kas'),
+      (async () => { try { return await rpc('saldo_kas_saya'); } catch { return await rpc('saldo_kas'); } })(),
       q(sb().from('kas').select('jenis,jumlah').gte('tanggal', bulanIni() + '-01')),
       a.tugasSaya(a.me),
       q(sb().from('log_aktivitas').select('*').order('id', { ascending: false }).limit(8))
