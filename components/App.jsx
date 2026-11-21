@@ -46,6 +46,10 @@ export async function tugasSaya(me) {
     if (amb) t.push({ n: amb, teks: 'Pengajuan Ambulans menunggu approval Anda', ke: 'ambulans' });
   }
   if (punya('bendahara')) {
+    const dana = await hit('ambulans_tahap', x => x.eq('status', 'menunggu_dana'));
+    if (dana) t.push({ n: dana, teks: 'Saldo pos Ambulans kurang, perlu dana dari Bendahara', ke: 'ambulans' });
+  }
+  if (punya('bendahara')) {
     const a = await hit('pengajuan', x => x.eq('status', 'disetujui'));
     if (a) t.push({ n: a, teks: 'Pengajuan sudah di-approve Ketum, siap dicairkan', ke: 'pengajuan', sub: 'disetujui' });
     const b = await hit('keropak_jumat', x => x.eq('status', 'menunggu'));
