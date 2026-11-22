@@ -20,7 +20,7 @@ export default function Beranda() {
       (async () => { try { return await rpc('saldo_kas_saya'); } catch { return await rpc('saldo_kas'); } })(),
       q(sb().from('kas').select('jenis,jumlah').gte('tanggal', bulanIni() + '-01')),
       a.tugasSaya(a.me),
-      q(sb().from('log_aktivitas').select('*').order('id', { ascending: false }).limit(8))
+      q(sb().from('log_aktivitas').select('*').order('id', { ascending: false }).limit(40))
     ]);
     const masuk = kasBln.filter(k => k.jenis === 'masuk').reduce((x, k) => x + +k.jumlah, 0);
     const keluar = kasBln.filter(k => k.jenis === 'keluar').reduce((x, k) => x + +k.jumlah, 0);
@@ -29,6 +29,8 @@ export default function Beranda() {
   if (!s.data) return <Loading s={s} />;
   const { saldo, masuk, keluar, tugas, log } = s.data;
   const bln = BULAN_P[+bulanIni().slice(5) - 1];
+  // aktivitas milik Admin hanya terlihat oleh Admin; pengurus lain tidak melihatnya
+  const logTampil = (a.punya('admin') ? log : log.filter(l => !(l.oleh && a.prof[l.oleh]?.role === 'admin'))).slice(0, 8);
 
   return <>
     <div className="kartu saldo">
@@ -51,7 +53,7 @@ export default function Beranda() {
       <a className="banner" href={'https://wa.me/?text=' + encodeURIComponent('Info jadwal shalat, maklumat Jumat & laporan keuangan masjid bisa dilihat di sini (tanpa login):\n' + window.location.origin + '/jamaah')} target="_blank" rel="noreferrer">Sebar Link Halaman Jamaah</a>
     <Struktur />
     <h3>Aktivitas Terakhir</h3>
-    <div className="kartu">{log.length ? <div className="timeline">{log.map(l => (
+    <div className="kartu">{logTampil.length ? <div className="timeline">{logTampil.map(l => (
       <div key={l.id}><b>{l.oleh ? a.nm(l.oleh) : 'Warga'}</b> · {labelModul(l.modul)} {l.aksi}{l.catatan && <> — <span className="kecil">{l.catatan}</span></>}<br /><span className="kecil">{jam(l.waktu)}</span></div>
     ))}</div> : <div className="kosong">Belum ada aktivitas</div>}</div>
     <div className="kartu" style={{ marginTop: 16, padding: 16 }}>
