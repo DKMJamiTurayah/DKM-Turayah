@@ -9,6 +9,11 @@ import { JalurInfo, susunInfo } from './InfoBerjalan';
 
 // Halaman /tv untuk layar masjid. Tidak menampilkan data kas.
 // Koreksi tanggal Hijriyah: /tv?koreksi=-1 (mundur 1 hari), -2, atau 1.
+// Suara: taruh file mp3 di folder public/audio (lihat BACA-INI.txt). Browser baru mau bunyi setelah layar diklik sekali.
+// Uji suara tanpa nunggu waktu sholat: /tv?tes=adzan  |  /tv?tes=subuh  |  /tv?tes=tahrim  (lalu klik layar).
+const SUARA = { adzan: '/audio/adzan.mp3', subuh: '/audio/adzan-subuh.mp3', tahrim: '/audio/tahrim-subuh.mp3' };
+const TAHRIM_SEBELUM_MENIT = 15; // tahrim mulai berapa menit sebelum adzan Subuh (ubah angka ini kalau perlu)
+const detikWIB = () => (Date.now() / 1000 + 7 * 3600) % 86400;
 const NAMA = { subuh: 'Subuh', dzuhur: 'Dzuhur', ashar: 'Ashar', maghrib: 'Maghrib', isya: 'Isya' };
 const menitWIB = () => ((Date.now() / 60000 + 7 * 60) % 1440);
 const jamWIB = () => {
@@ -34,6 +39,7 @@ const CSS = `.tv{position:fixed;inset:0;display:flex;flex-direction:column;backg
 .tv-shalat div{background:rgba(255,255,255,.1);border-radius:2vmin;padding:2vmin 0;text-align:center;font-size:3vmin}
 .tv-shalat div b{display:block;font-size:6.6vmin;margin-top:.4vmin;font-variant-numeric:tabular-nums}
 .tv-shalat div.on{background:#fff;color:#0f5e47}
+.tv-suara{margin-left:auto;font-size:2.2vmin;opacity:.85;background:rgba(255,255,255,.12);padding:.8vmin 2vmin;border-radius:99px}
 .tv .ib{font-size:4.4vmin;padding:1vmin 0}.tv .ib-arab{font-size:5.2vmin}
 .tv .ib-jalan{padding:1.4vmin 0;animation-duration:calc(var(--ib-durasi,40s) * 1.8)!important}
 .tv .ib-item{padding:0 3vmin}.tv .ib-item+.ib-item:before{margin-right:3vmin}`;
@@ -43,14 +49,41 @@ export default function TV() {
   const [items, setItems] = useState([]);
   const terakhir = useRef('');
   const [koreksi, setKoreksi] = useState(0);
+  const [aktif, setAktif] = useState(false);       // suara sudah diaktifkan (layar sudah diklik)
+  const [putar, setPutar] = useState(null);        // label suara yang sedang bunyi
+  const aktifRef = useRef(false), audioRef = useRef(null), sudah = useRef(new Set()), tesRef = useRef('');
 
-  // jam berdetak tiap detik
-  useEffect(() => { const iv = setInterval(() => tik(x => x + 1), 1000); return () => clearInterval(iv); }, []);
+  const mulai = (src, label) => {
+    try {
+      audioRef.current?.pause();
+      const a = new Audio(src);
+      audioRef.current = a;
+      a.onended = a.onerror = () => setPutar(null);
+      a.play().then(() => setPutar(label), () => setPutar(null));
+    } catch {}
+  };
+
+  // jam berdetak tiap detik + cek apakah sudah waktunya tahrim / adzan
+  useEffect(() => {
+    const cek = () => {
+      if (!aktifRef.current) return;
+      const hi = hariIni(), j = hitungJadwal(hi), now = detikWIB();
+      const jadwal = [['tahrim', j._menit.subuh * 60 - TAHRIM_SEBELUM_MENIT * 60, SUARA.tahrim, 'Tahrim Subuh']];
+      WAJIB.forEach(k => jadwal.push([k, j._menit[k] * 60, k === 'subuh' ? SUARA.subuh : SUARA.adzan, 'Adzan ' + NAMA[k]]));
+      for (const [k, t, src, label] of jadwal) {
+        const id = hi + k, telat = now - t;
+        if (telat >= 0 && telat < 45 && !sudah.current.has(id)) { sudah.current.add(id); mulai(src, label); }
+      }
+    };
+    const iv = setInterval(() => { tik(x => x + 1); cek(); }, 1000);
+    return () => clearInterval(iv);
+  }, []);
 
   // koreksi Hijriyah dari alamat (?koreksi=-1)
   useEffect(() => {
     const k = +new URLSearchParams(window.location.search).get('koreksi');
     if (k) setKoreksi(Math.max(-2, Math.min(2, k)));
+    tesRef.current = new URLSearchParams(window.location.search).get('tes') || '';
   }, []);
 
   // teks berjalan dari Kelola -> Info Berjalan; tanpa saldo kas. Diambil ulang tiap 2 menit.
@@ -86,16 +119,22 @@ export default function TV() {
   if (!nx) nx = 'subuh';
   const [hh, mm, ss] = jamWIB();
 
-  const layarPenuh = () => { try { document.documentElement.requestFullscreen?.(); } catch {} };
+  const klik = () => {
+    try { document.documentElement.requestFullscreen?.(); } catch {}
+    aktifRef.current = true; setAktif(true);
+    const tes = tesRef.current;
+    if (tes) { tesRef.current = ''; mulai(SUARA[tes] || SUARA.adzan, 'Tes suara'); }
+  };
 
-  return <div className="tv" onClick={layarPenuh}>
+  return <div className="tv" onClick={klik}>
     <style>{CSS}</style>
-    <div className="tv-atas"><LogoMasjid size={72} /><div><b>{NAMA_DKM}</b><span>{LOKASI.nama}</span></div></div>
+    <div className="tv-atas"><LogoMasjid size={72} /><div><b>{NAMA_DKM}</b><span>{LOKASI.nama}</span></div>
+      <div className="tv-suara">{aktif ? '🔊 Suara aktif' : '🔇 Klik layar untuk aktifkan suara'}</div></div>
     <div className="tv-tengah">
       <div className="tv-jam">{hh}:{mm}<small>{ss}</small></div>
       <div className="tv-tgl">{tglPanjang(hi)}</div>
       <div className="tv-hij">{tglHijriyah(hi, koreksi)}</div>
-      <div className="tv-next">{NAMA[nx]} {nxJam} · {sisa(nxLagi)} lagi</div>
+      <div className="tv-next">{putar ? '🔊 ' + putar : NAMA[nx] + ' ' + nxJam + ' · ' + sisa(nxLagi) + ' lagi'}</div>
     </div>
     <div className="tv-shalat">
       {WAJIB.map(k => <div key={k} className={nx === k ? 'on' : ''}>{NAMA[k]}<b>{j[k]}</b></div>)}
