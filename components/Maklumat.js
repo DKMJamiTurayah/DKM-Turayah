@@ -14,7 +14,7 @@ import { Btn, Field, Loading, useApp, useLoad } from './ui';
 // isian awal kalau belum pernah ada maklumat sama sekali
 const BAWAAN = {
   waktu: '11.40 WIB', khatib: '', muadzin: '', petugas_maklumat: '',
-  nama_masjid: 'Masjid Jami Turayah', alamat: 'Villa Athaland 2, Sindangmulya',
+  nama_masjid: 'Masjid Jami Turayah', alamat: 'Villa Athaland, Sindangmulya',
   rekening: 'Bank BJB 0146-20269-1100', token_listrik: '45139308915', token_an: 'Masjid Jami Turayah',
   kegiatan: [
     { judul: "Ba'da Ashar, jadwal hari Senin s/d Rabu", items: ['TPA Anak'] },
