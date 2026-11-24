@@ -44,6 +44,14 @@ const CSS = `.tv{position:fixed;inset:0;display:flex;flex-direction:column;backg
 .tv .ib-jalan{padding:1.4vmin 0;animation-duration:calc(var(--ib-durasi,40s) * 1.8)!important}
 .tv .ib-item{padding:0 3vmin}.tv .ib-item+.ib-item:before{margin-right:3vmin}`;
 
+// daftar suara hari itu: [kunci, detik, file suara, label]
+function susunJadwal(hi) {
+  const j = hitungJadwal(hi);
+  const jadwal = [['tahrim', j._menit.subuh * 60 - TAHRIM_SEBELUM_MENIT * 60, SUARA.tahrim, 'Tahrim']];
+  WAJIB.forEach(k => jadwal.push([k, j._menit[k] * 60, k === 'subuh' ? SUARA.subuh : SUARA.adzan, 'Adzan']));
+  return jadwal;
+}
+
 export default function TV() {
   const [, tik] = useState(0);
   const [items, setItems] = useState([]);
@@ -67,12 +75,11 @@ export default function TV() {
   useEffect(() => {
     const cek = () => {
       if (!aktifRef.current) return;
-      const hi = hariIni(), j = hitungJadwal(hi), now = detikWIB();
-      const jadwal = [['tahrim', j._menit.subuh * 60 - TAHRIM_SEBELUM_MENIT * 60, SUARA.tahrim, 'Tahrim Subuh']];
-      WAJIB.forEach(k => jadwal.push([k, j._menit[k] * 60, k === 'subuh' ? SUARA.subuh : SUARA.adzan, 'Adzan ' + NAMA[k]]));
-      for (const [k, t, src, label] of jadwal) {
+      const hi = hariIni(), now = detikWIB();
+      for (const [k, t, src, label] of susunJadwal(hi)) {
         const id = hi + k, telat = now - t;
-        if (telat >= 0 && telat < 45 && !sudah.current.has(id)) { sudah.current.add(id); mulai(src, label); }
+        // hanya bunyi kalau tepat waktunya (maks 30 detik); yang sudah lewat tidak disetel
+        if (telat >= 0 && telat < 30 && !sudah.current.has(id)) { sudah.current.add(id); mulai(src, label); }
       }
     };
     const iv = setInterval(() => { tik(x => x + 1); cek(); }, 1000);
@@ -121,6 +128,9 @@ export default function TV() {
 
   const klik = () => {
     try { document.documentElement.requestFullscreen?.(); } catch {}
+    // aplikasi baru dibuka/diaktifkan: waktu yang sudah lewat hari ini ditandai selesai, jangan disetel
+    const h = hariIni(), d = detikWIB();
+    for (const [k, t] of susunJadwal(h)) if (d >= t) sudah.current.add(h + k);
     aktifRef.current = true; setAktif(true);
     const tes = tesRef.current;
     if (tes) { tesRef.current = ''; mulai(SUARA[tes] || SUARA.adzan, 'Tes suara'); }
