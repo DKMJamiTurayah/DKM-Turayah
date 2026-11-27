@@ -254,6 +254,32 @@ export function Poster({ d, lap, ref }) {
         <div><span>Maklumat</span><b>{d.petugas_maklumat || '-'}</b></div>
       </div>
 
+      {/* Rekening BJB & token PLN, di tengah antara petugas dan laporan keuangan */}
+      <div style={{ display: 'flex', gap: 20, margin: '28px 0 8px' }}>
+        <div style={{ flex: 1, minWidth: 0, display: 'flex', alignItems: 'center', gap: 18, background: '#f08a1c', color: '#fff', borderRadius: 22, padding: '20px 24px' }}>
+          <svg width="84" height="84" viewBox="0 0 84 84" style={{ flex: 'none' }}>
+            <rect width="84" height="84" rx="18" fill="#fff" />
+            <rect x="6" y="6" width="72" height="72" rx="14" fill="#0b5aa8" />
+            <text x="42" y="53" textAnchor="middle" fontSize="30" fontWeight="800" fill="#fff" fontFamily="Plus Jakarta Sans, sans-serif">bjb</text>
+          </svg>
+          <div style={{ minWidth: 0 }}>
+            <div style={{ fontSize: 20, fontWeight: 600 }}>Rekening masjid</div>
+            <div style={{ fontSize: 25, fontWeight: 800, lineHeight: 1.2, whiteSpace: 'nowrap' }}>{d.rekening || '-'}</div>
+          </div>
+        </div>
+        <div style={{ flex: 1, minWidth: 0, display: 'flex', alignItems: 'center', gap: 18, background: '#f08a1c', color: '#fff', borderRadius: 22, padding: '20px 24px' }}>
+          <svg width="84" height="84" viewBox="0 0 84 84" style={{ flex: 'none' }}>
+            <rect width="84" height="84" rx="18" fill="#fff" />
+            <rect x="6" y="6" width="72" height="72" rx="14" fill="#1a8fc9" />
+            <path d="M48 12 L26 48 H40 L34 72 L58 34 H44 Z" fill="#fbd51a" />
+          </svg>
+          <div style={{ minWidth: 0 }}>
+            <div style={{ fontSize: 20, fontWeight: 600 }}>Token listrik{d.token_an ? ', a/n ' + d.token_an : ''}</div>
+            <div style={{ fontSize: 28, fontWeight: 800, lineHeight: 1.2 }}>{d.token_listrik || '-'}</div>
+          </div>
+        </div>
+      </div>
+
       <div className="mk-h">Laporan keuangan</div>
       <table className="mk-tabel">
         <thead><tr><th>Rincian</th><th>Saldo lalu</th><th className="c">Masuk</th><th className="c">Keluar</th><th>Saldo Akhir</th></tr></thead>
@@ -280,34 +306,8 @@ export function Poster({ d, lap, ref }) {
       </>}
 
     </div>
-
-   <div style={{ display: 'flex', gap: 20, margin: '4px 0 34px' }}>
-        <div style={{ flex: 1, minWidth: 0, display: 'flex', alignItems: 'center', gap: 18, background: '#f08a1c', color: '#fff', borderRadius: 22, padding: '20px 24px' }}>
-          <svg width="84" height="84" viewBox="0 0 84 84" style={{ flex: 'none' }}>
-            <rect width="84" height="84" rx="18" fill="#fff" />
-            <rect x="6" y="6" width="72" height="72" rx="14" fill="#0b5aa8" />
-            <text x="42" y="53" textAnchor="middle" fontSize="30" fontWeight="800" fill="#fff" fontFamily="Plus Jakarta Sans, sans-serif">bjb</text>
-          </svg>
-          <div style={{ minWidth: 0 }}>
-            <div style={{ fontSize: 20, fontWeight: 600 }}>Rekening masjid</div>
-            <div style={{ fontSize: 28, fontWeight: 800, lineHeight: 1.2 }}>{d.rekening || '-'}</div>
-          </div>
-        </div>
-        <div style={{ flex: 1, minWidth: 0, display: 'flex', alignItems: 'center', gap: 18, background: '#f08a1c', color: '#fff', borderRadius: 22, padding: '20px 24px' }}>
-          <svg width="84" height="84" viewBox="0 0 84 84" style={{ flex: 'none' }}>
-            <rect width="84" height="84" rx="18" fill="#fff" />
-            <rect x="6" y="6" width="72" height="72" rx="14" fill="#1a8fc9" />
-            <path d="M48 12 L26 48 H40 L34 72 L58 34 H44 Z" fill="#fbd51a" />
-          </svg>
-          <div style={{ minWidth: 0 }}>
-            <div style={{ fontSize: 20, fontWeight: 600 }}>Token listrik{d.token_an ? ', a/n ' + d.token_an : ''}</div>
-            <div style={{ fontSize: 28, fontWeight: 800, lineHeight: 1.2 }}>{d.token_listrik || '-'}</div>
-          </div>
-        </div>
-      </div>
   </div>;
-        }
-    
+}
 
 /* ====== Jadwal Khatib per bulan (rekap + rencana ke depan) ====== */
 const bulanJumat = bln => {
