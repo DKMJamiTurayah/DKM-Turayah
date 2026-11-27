@@ -256,7 +256,7 @@ export function Poster({ d, lap, ref }) {
 
       {/* Rekening BJB & token PLN, di tengah antara petugas dan laporan keuangan */}
       <div style={{ display: 'flex', gap: 20, margin: '28px 0 8px' }}>
-        <div style={{ flex: 1, minWidth: 0, display: 'flex', alignItems: 'center', gap: 18, background: '#f08a1c', color: '#fff', borderRadius: 22, padding: '20px 24px' }}>
+        <div style={{ flex: 1, minWidth: 0, display: 'flex', alignItems: 'center', gap: 18, background: '#f08a1c', color: '#1c2452', borderRadius: 22, padding: '20px 24px' }}>
           <svg width="84" height="84" viewBox="0 0 84 84" style={{ flex: 'none' }}>
             <rect width="84" height="84" rx="18" fill="#fff" />
             <rect x="6" y="6" width="72" height="72" rx="14" fill="#0b5aa8" />
@@ -264,10 +264,10 @@ export function Poster({ d, lap, ref }) {
           </svg>
           <div style={{ minWidth: 0 }}>
             <div style={{ fontSize: 20, fontWeight: 600 }}>Rekening masjid</div>
-            <div style={{ fontSize: 25, fontWeight: 800, lineHeight: 1.2, whiteSpace: 'nowrap' }}>{d.rekening || '-'}</div>
+            <div style={{ fontSize: 28, fontWeight: 800, lineHeight: 1.2, whiteSpace: 'nowrap' }}>{(d.rekening || '').replace(/^\s*bank\s*bjb\s*/i, '') || '-'}</div>
           </div>
         </div>
-        <div style={{ flex: 1, minWidth: 0, display: 'flex', alignItems: 'center', gap: 18, background: '#f08a1c', color: '#fff', borderRadius: 22, padding: '20px 24px' }}>
+        <div style={{ flex: 1, minWidth: 0, display: 'flex', alignItems: 'center', gap: 18, background: '#f08a1c', color: '#1c2452', borderRadius: 22, padding: '20px 24px' }}>
           <svg width="84" height="84" viewBox="0 0 84 84" style={{ flex: 'none' }}>
             <rect width="84" height="84" rx="18" fill="#fff" />
             <rect x="6" y="6" width="72" height="72" rx="14" fill="#1a8fc9" />
